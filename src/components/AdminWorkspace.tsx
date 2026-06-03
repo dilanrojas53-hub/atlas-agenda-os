@@ -34,13 +34,15 @@ export function AdminWorkspace({ tenant }: { tenant?: TenantLike }) {
 }
 
 function AppointmentAdminTab({ activeTab, tenantSlug }: { activeTab: string; tenantSlug: string }) {
-  const { appointments, services, addService } = useAtlasStore();
+  const { appointments, services, addService, updateAppointmentStatus, getTenant, updateTenant } = useAtlasStore();
+  const tenant = getTenant(tenantSlug);
   const tenantAppointments = appointments.filter(item => item.tenantSlug === tenantSlug);
   const tenantServices = services.filter(item => item.tenantSlug === tenantSlug);
   const [newService, setNewService] = useState({ name: '', category: 'General', price: 0, duration: 45, deposit: 5000 });
+  const [settings, setSettings] = useState({ name: tenant.name, whatsapp: tenant.whatsapp, address: tenant.address, sinpeNumber: tenant.sinpeNumber || '', sinpeOwner: tenant.sinpeOwner || tenant.name, heroTitle: tenant.heroTitle || tenant.name, ctaLabel: tenant.ctaLabel || 'Reservar ahora' });
 
   if (activeTab === 'Agenda') {
-    return <div className="dashboard-grid"><article className="card wide-card"><CalendarDays /><h3>Agenda diaria</h3>{tenantAppointments.map(a => <div className="agenda-row" key={a.id}><span>{a.time}</span><strong>{a.service}</strong><em>{a.status}</em></div>)}</article><article className="card"><BellRing /><h3>Acciones sugeridas</h3><p>Confirmar depósitos pendientes.</p><p>Enviar recordatorio 24h antes.</p><p>Ofrecer aftercare o rebooking al finalizar.</p></article></div>;
+    return <div className="dashboard-grid"><article className="card wide-card"><CalendarDays /><h3>Agenda diaria</h3>{tenantAppointments.map(a => <div className="review-row" key={a.id}><div><strong>{a.client}</strong><span>{a.service} · {a.time}</span><em>{a.status}</em></div><div className="row-actions"><button onClick={() => { updateAppointmentStatus(a.id, 'confirmed'); toast.success('Cita confirmada'); }}>Confirmar</button><button onClick={() => { updateAppointmentStatus(a.id, 'cancelled'); toast.message('Cita cancelada'); }}>Cancelar</button></div></div>)}</article><article className="card"><BellRing /><h3>Automatizaciones</h3><p>Recordatorio 24h antes.</p><p>Solicitud de depósito.</p><p>Mensaje post-cita con upsell.</p></article></div>;
   }
 
   if (activeTab === 'Servicios') {
@@ -61,24 +63,26 @@ function AppointmentAdminTab({ activeTab, tenantSlug }: { activeTab: string; ten
   }
 
   if (activeTab === 'Landing') {
-    return <div className="dashboard-grid"><article className="card"><Image /><h3>Landing pública</h3><p>Hero activo, portafolio pendiente, horarios visibles, WhatsApp conectado.</p></article><article className="card"><Settings /><h3>Bloques editables</h3><p>Hero</p><p>Galería</p><p>Mapa</p><p>CTA de reserva</p></article></div>;
+    return <div className="dashboard-grid"><article className="card"><Image /><h3>Preview landing</h3><p>Hero: {tenant.heroTitle}</p><p>CTA: {tenant.ctaLabel}</p><p>WhatsApp: {tenant.whatsapp}</p></article><article className="card"><Settings /><h3>Bloques editables</h3><p>Hero</p><p>Galería</p><p>Mapa</p><p>CTA de reserva</p></article></div>;
   }
 
   if (activeTab === 'Ajustes') {
-    return <div className="dashboard-grid"><article className="card"><Settings /><h3>Configuración</h3><p>Depósito obligatorio: activo.</p><p>Recordatorios: WhatsApp.</p><p>Duración base: por servicio.</p></article><article className="card"><Wallet /><h3>Pagos</h3><p>SINPE configurado.</p><p>Comprobante requerido para confirmar.</p></article></div>;
+    return <div className="dashboard-grid"><article className="card wide-card"><Settings /><h3>Configuración del negocio</h3><div className="stack-form"><input value={settings.name} onChange={e => setSettings({ ...settings, name: e.target.value })} placeholder="Nombre" /><input value={settings.whatsapp} onChange={e => setSettings({ ...settings, whatsapp: e.target.value })} placeholder="WhatsApp" /><input value={settings.address} onChange={e => setSettings({ ...settings, address: e.target.value })} placeholder="Dirección" /><input value={settings.heroTitle} onChange={e => setSettings({ ...settings, heroTitle: e.target.value })} placeholder="Hero" /><input value={settings.ctaLabel} onChange={e => setSettings({ ...settings, ctaLabel: e.target.value })} placeholder="CTA" /><button className="btn primary full" onClick={() => { updateTenant(tenantSlug, settings); toast.success('Configuración guardada'); }}>Guardar configuración</button></div></article><article className="card"><Wallet /><h3>Pagos SINPE</h3><div className="stack-form"><input value={settings.sinpeNumber} onChange={e => setSettings({ ...settings, sinpeNumber: e.target.value })} placeholder="Número SINPE" /><input value={settings.sinpeOwner} onChange={e => setSettings({ ...settings, sinpeOwner: e.target.value })} placeholder="Titular" /><button className="btn secondary full" onClick={() => { updateTenant(tenantSlug, settings); toast.success('Datos SINPE guardados'); }}>Guardar SINPE</button></div></article></div>;
   }
 
   return <article className="card"><CalendarDays /><h3>Citas</h3><div className="admin-table">{tenantAppointments.map(a => <div key={a.id}><strong>{a.client}</strong><span>{a.service}</span><span>{a.time}</span><span>{a.status}</span></div>)}</div></article>;
 }
 
 function MembershipAdminTab({ activeTab, tenantSlug }: { activeTab: string; tenantSlug: string }) {
-  const { memberships, products, events, approveReceipt, rejectReceipt, addProduct, addEvent } = useAtlasStore();
+  const { memberships, products, events, approveReceipt, rejectReceipt, addProduct, addEvent, getTenant, updateTenant } = useAtlasStore();
+  const tenant = getTenant(tenantSlug);
   const tenantMemberships = memberships.filter(item => item.tenantSlug === tenantSlug);
   const tenantProducts = products.filter(item => item.tenantSlug === tenantSlug);
   const tenantEvents = events.filter(item => item.tenantSlug === tenantSlug);
   const [productName, setProductName] = useState('');
   const [productPrice, setProductPrice] = useState(0);
   const [eventTitle, setEventTitle] = useState('');
+  const [settings, setSettings] = useState({ name: tenant.name, whatsapp: tenant.whatsapp, address: tenant.address, sinpeNumber: tenant.sinpeNumber || '', sinpeOwner: tenant.sinpeOwner || tenant.name, heroTitle: tenant.heroTitle || tenant.name, ctaLabel: tenant.ctaLabel || 'Entrar a mi cuenta' });
 
   if (activeTab === 'Membresías') {
     return <article className="card"><Dumbbell /><h3>Membresías activas</h3><div className="admin-table">{tenantMemberships.map(m => <div key={m.id}><strong>{m.client}</strong><span>{m.plan}</span><span>{m.due}</span><span>{money(m.amount)}</span></div>)}</div></article>;
@@ -104,5 +108,9 @@ function MembershipAdminTab({ activeTab, tenantSlug }: { activeTab: string; tena
     return <div className="dashboard-grid"><article className="card"><Sparkles /><h3>Promos de academia</h3><p>Promo matrícula</p><p>Referidos</p><p>Evento especial</p></article><article className="card"><BellRing /><h3>Automatizaciones</h3><p>Mensualidad vencida</p><p>Comprobante pendiente</p><p>Cliente inactivo</p></article></div>;
   }
 
-  return <div className="dashboard-grid"><article className="card"><Settings /><h3>{activeTab}</h3><p>Módulo configurable para este tenant.</p></article><article className="card"><Wallet /><h3>Pagos</h3><p>SINPE y validación manual de comprobantes.</p></article></div>;
+  if (activeTab === 'Ajustes') {
+    return <div className="dashboard-grid"><article className="card wide-card"><Settings /><h3>Configuración del negocio</h3><div className="stack-form"><input value={settings.name} onChange={e => setSettings({ ...settings, name: e.target.value })} placeholder="Nombre" /><input value={settings.whatsapp} onChange={e => setSettings({ ...settings, whatsapp: e.target.value })} placeholder="WhatsApp" /><input value={settings.address} onChange={e => setSettings({ ...settings, address: e.target.value })} placeholder="Dirección" /><input value={settings.heroTitle} onChange={e => setSettings({ ...settings, heroTitle: e.target.value })} placeholder="Hero" /><input value={settings.ctaLabel} onChange={e => setSettings({ ...settings, ctaLabel: e.target.value })} placeholder="CTA" /><button className="btn primary full" onClick={() => { updateTenant(tenantSlug, settings); toast.success('Configuración guardada'); }}>Guardar configuración</button></div></article><article className="card"><Wallet /><h3>Pagos SINPE</h3><div className="stack-form"><input value={settings.sinpeNumber} onChange={e => setSettings({ ...settings, sinpeNumber: e.target.value })} placeholder="Número SINPE" /><input value={settings.sinpeOwner} onChange={e => setSettings({ ...settings, sinpeOwner: e.target.value })} placeholder="Titular" /><button className="btn secondary full" onClick={() => { updateTenant(tenantSlug, settings); toast.success('Datos SINPE guardados'); }}>Guardar SINPE</button></div></article></div>;
+  }
+
+  return <div className="dashboard-grid"><article className="card"><Image /><h3>Landing pública</h3><p>Hero: {tenant.heroTitle}</p><p>CTA: {tenant.ctaLabel}</p></article><article className="card"><Wallet /><h3>Pagos</h3><p>SINPE: {tenant.sinpeNumber}</p><p>Titular: {tenant.sinpeOwner}</p></article></div>;
 }

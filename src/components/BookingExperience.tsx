@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from 'react';
 import { Link, useParams } from 'wouter';
 import { CheckCircle2 } from 'lucide-react';
-import { business, services } from '../data/demo';
+import { toast } from 'sonner';
+import { useAtlasStore } from '../state/AtlasStore';
 
 const money = (value: number) => `₡${value.toLocaleString('es-CR')}`;
 const professionals = ['Ana · Tattoo artist', 'Marco · Piercer', 'Sofia · Beauty specialist'];
@@ -10,6 +11,7 @@ const times = ['10:00 AM', '12:30 PM', '2:30 PM', '4:00 PM', '6:00 PM'];
 
 export function BookingExperience() {
   const { id } = useParams();
+  const { services, createAppointment } = useAtlasStore();
   const selected = services.find(service => service.id === id) || services[0];
   const [professional, setProfessional] = useState(professionals[0]);
   const [date, setDate] = useState(dates[1]);
@@ -19,6 +21,21 @@ export function BookingExperience() {
   const [notes, setNotes] = useState('');
   const [confirmed, setConfirmed] = useState(false);
   const canConfirm = clientName.trim().length > 2 && phone.trim().length > 6;
+
+  function confirmBooking() {
+    if (!canConfirm) return;
+    createAppointment({
+      tenantSlug: selected.tenantSlug,
+      client: clientName,
+      clientPhone: phone,
+      service: selected.name,
+      time,
+      date,
+      notes: `${notes} · Profesional: ${professional}`,
+    });
+    setConfirmed(true);
+    toast.success('Cita enviada al admin del tenant');
+  }
 
   return (
     <section className="booking-layout">
@@ -50,7 +67,7 @@ export function BookingExperience() {
           <div className="confirmation-card card">
             <CheckCircle2 size={42} />
             <h2>Cita solicitada</h2>
-            <p>Así se vería una solicitud enviada al panel admin del negocio.</p>
+            <p>La solicitud ya fue agregada al panel admin de este tenant.</p>
             <div className="summary-line"><span>Cliente</span><strong>{clientName}</strong></div>
             <div className="summary-line"><span>Horario</span><strong>{date} · {time}</strong></div>
             <div className="summary-line"><span>Profesional</span><strong>{professional}</strong></div>
@@ -66,9 +83,9 @@ export function BookingExperience() {
         <div className="summary-line"><span>Depósito</span><strong>{money(selected.deposit)}</strong></div>
         <div className="summary-line"><span>Horario</span><strong>{date} · {time}</strong></div>
         <div className="summary-line"><span>Profesional</span><strong>{professional.split(' · ')[0]}</strong></div>
-        <button disabled={!canConfirm} onClick={() => setConfirmed(true)} className="btn primary full">Confirmar solicitud</button>
+        <button disabled={!canConfirm || confirmed} onClick={confirmBooking} className="btn primary full">Confirmar solicitud</button>
         {!canConfirm && <small className="form-hint">Completa nombre y WhatsApp para confirmar.</small>}
-        <Link href={`/${business.slug}`} className="center-link">Volver al catálogo</Link>
+        <Link href={`/${selected.tenantSlug}`} className="center-link">Volver al catálogo</Link>
       </aside>
     </section>
   );

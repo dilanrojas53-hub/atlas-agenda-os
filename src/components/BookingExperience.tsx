@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link, useParams } from 'wouter';
 import { CheckCircle2 } from 'lucide-react';
 import { business, services } from '../data/demo';
@@ -74,7 +74,7 @@ export function BookingExperience() {
   );
 }
 
-function BookingBlock({ title, children }: { title: string; children: React.ReactNode }) {
+function BookingBlock({ title, children }: { title: string; children: ReactNode }) {
   return <section className="form-section"><h3>{title}</h3>{children}</section>;
 }
 

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { appointments as seedAppointments, events as seedEvents, memberships as seedMemberships, products as seedProducts, services as seedServices, tenants as seedTenants } from '../data/demo';
+import { loadSupabaseSnapshot } from './supabaseHydration';
 
 type Tenant = typeof seedTenants[keyof typeof seedTenants] & {
   plan?: 'starter' | 'operations' | 'growth';
@@ -50,6 +51,7 @@ type Store = {
   memberships: Membership[];
   products: Product[];
   events: EventItem[];
+  dataSource: 'local' | 'supabase';
   getTenant: (slug?: string) => Tenant;
   addTenant: (input: NewTenantInput) => string;
   updateTenant: (slug: string, patch: TenantPatch) => void;
@@ -91,6 +93,7 @@ function initialState() {
     memberships: seedMemberships as Membership[],
     products: seedProducts as Product[],
     events: seedEvents as EventItem[],
+    dataSource: 'local' as const,
   };
 }
 
@@ -98,8 +101,25 @@ export function AtlasStoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState(initialState);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-    if (saved) setState(JSON.parse(saved));
+    let cancelled = false;
+    async function hydrate() {
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+      if (saved) setState(JSON.parse(saved));
+
+      const remote = await loadSupabaseSnapshot();
+      if (!cancelled && remote) {
+        setState(current => ({
+          ...current,
+          tenants: remote.tenants as Record<string, Tenant>,
+          services: remote.services.length ? remote.services as Service[] : current.services,
+          products: remote.products.length ? remote.products as Product[] : current.products,
+          events: remote.events.length ? remote.events as EventItem[] : current.events,
+          dataSource: 'supabase',
+        }));
+      }
+    }
+    hydrate();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {

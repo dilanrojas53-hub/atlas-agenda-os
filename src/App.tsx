@@ -1,9 +1,10 @@
+import type { ReactNode } from 'react';
 import { Route, Switch, Link, useParams } from 'wouter';
 import { CalendarDays, LayoutDashboard, Sparkles, Users, Scissors, ShieldCheck } from 'lucide-react';
 import { business, services, appointments } from './data/demo';
 import { APP_NAME, APP_TAGLINE } from './domain/core';
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Shell({ children }: { children: ReactNode }) {
   return <main className="app-shell">{children}</main>;
 }
 
@@ -28,7 +29,7 @@ function Home() {
   );
 }
 
-function Feature({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
+function Feature({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {
   return <article className="card">{icon}<h3>{title}</h3><p>{text}</p></article>;
 }
 

@@ -6,7 +6,7 @@
   "description": "SaaS multi-tenant de agenda, reservas y gestión de citas para negocios de servicios de Digital Atlas.",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
     "check": "tsc --noEmit"
   },
@@ -22,5 +22,8 @@
     "sonner": "^2.0.7",
     "recharts": "^2.15.4"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3"
+  }
 }

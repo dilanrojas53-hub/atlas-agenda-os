@@ -1,7 +1,8 @@
+import type { ReactNode } from 'react';
 import { CalendarDays, Clock, Dumbbell, Sparkles, Users, Wallet } from 'lucide-react';
 import { useAtlasStore } from '../state/AtlasStore';
 
-function CardList({ title, items, icon }: { title: string; items: string[]; icon: React.ReactNode }) {
+function CardList({ title, items, icon }: { title: string; items: string[]; icon: ReactNode }) {
   return <article className="card">{icon}<h3>{title}</h3>{items.map(item => <p key={item}>{item}</p>)}</article>;
 }
 

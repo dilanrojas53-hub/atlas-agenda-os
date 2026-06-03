@@ -44,14 +44,19 @@ type NewAppointmentInput = {
 
 type TenantPatch = Partial<Pick<Tenant, 'name' | 'description' | 'whatsapp' | 'address' | 'sinpeNumber' | 'sinpeOwner' | 'primaryColor' | 'heroTitle' | 'ctaLabel' | 'plan'>>;
 
-type Store = {
+type DataSource = 'local' | 'supabase';
+
+type AtlasState = {
   tenants: Record<string, Tenant>;
   services: Service[];
   appointments: Appointment[];
   memberships: Membership[];
   products: Product[];
   events: EventItem[];
-  dataSource: 'local' | 'supabase';
+  dataSource: DataSource;
+};
+
+type Store = AtlasState & {
   getTenant: (slug?: string) => Tenant;
   addTenant: (input: NewTenantInput) => string;
   updateTenant: (slug: string, patch: TenantPatch) => void;
@@ -85,7 +90,7 @@ function enrichTenants() {
   } as Tenant]));
 }
 
-function initialState() {
+function initialState(): AtlasState {
   return {
     tenants: enrichTenants() as Record<string, Tenant>,
     services: seedServices as Service[],
@@ -93,12 +98,12 @@ function initialState() {
     memberships: seedMemberships as Membership[],
     products: seedProducts as Product[],
     events: seedEvents as EventItem[],
-    dataSource: 'local' as const,
+    dataSource: 'local',
   };
 }
 
 export function AtlasStoreProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState(initialState);
+  const [state, setState] = useState<AtlasState>(initialState);
 
   useEffect(() => {
     let cancelled = false;

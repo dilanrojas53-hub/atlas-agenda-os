@@ -1,52 +1,132 @@
 import type { ReactNode } from 'react';
 import { Route, Switch, Link, useParams } from 'wouter';
-import { CalendarDays, LayoutDashboard, Sparkles, Users, Scissors, ShieldCheck } from 'lucide-react';
+import {
+  CalendarDays,
+  LayoutDashboard,
+  Sparkles,
+  Users,
+  Scissors,
+  ShieldCheck,
+  Clock,
+  Wallet,
+  MessageCircle,
+  MapPin,
+  CheckCircle2,
+  ArrowRight,
+  Building2,
+  BellRing,
+  BarChart3,
+  Image,
+  Settings,
+  UserCheck,
+} from 'lucide-react';
 import { business, services, appointments } from './data/demo';
 import { APP_NAME, APP_TAGLINE } from './domain/core';
+
+const money = (value: number) => `₡${value.toLocaleString('es-CR')}`;
 
 function Shell({ children }: { children: ReactNode }) {
   return <main className="app-shell">{children}</main>;
 }
 
+function TopNav({ compact = false }: { compact?: boolean }) {
+  return (
+    <nav className="topbar">
+      <Link href="/" className="brand-link">Atlas Agenda OS</Link>
+      <div className="nav-actions">
+        {!compact && <Link href={`/${business.slug}`}>Demo cliente</Link>}
+        <Link href={`/admin/${business.slug}`}>Admin</Link>
+        <Link href="/super-admin">Digital Atlas</Link>
+      </div>
+    </nav>
+  );
+}
+
 function Home() {
   return (
     <Shell>
-      <section className="hero">
-        <span className="eyebrow">Digital Atlas</span>
-        <h1>{APP_NAME}</h1>
-        <p>{APP_TAGLINE}</p>
-        <div className="actions">
-          <Link href={`/${business.slug}`} className="btn primary">Ver demo publica</Link>
-          <Link href={`/admin/${business.slug}`} className="btn secondary">Panel admin</Link>
+      <TopNav />
+      <section className="hero home-hero">
+        <div>
+          <span className="eyebrow">Digital Atlas product lab</span>
+          <h1>{APP_NAME}</h1>
+          <p>{APP_TAGLINE}. Un SaaS para convertir cualquier estudio o clinica en una experiencia de reserva clara, vendible y medible.</p>
+          <div className="actions">
+            <Link href={`/${business.slug}`} className="btn primary">Ver experiencia cliente</Link>
+            <Link href={`/admin/${business.slug}`} className="btn secondary">Ver panel operativo</Link>
+          </div>
         </div>
+        <aside className="hero-console">
+          <span className="console-label">Sistema activo</span>
+          <h3>Ink Beauty Studio</h3>
+          <p>3 servicios destacados · 2 citas hoy · deposito configurado</p>
+          <div className="mini-flow">
+            <span>Servicio</span><ArrowRight size={14} /><span>Horario</span><ArrowRight size={14} /><span>Deposito</span><ArrowRight size={14} /><span>Confirmacion</span>
+          </div>
+        </aside>
       </section>
+
+      <section className="section-head">
+        <span className="eyebrow">Que estas viendo</span>
+        <h2>El mismo motor SaaS, traducido de pedidos a citas</h2>
+        <p>El objetivo no es una landing suelta. Es un sistema donde Digital Atlas crea negocios, cada negocio configura su marca y los clientes reservan servicios.</p>
+      </section>
+
       <section className="grid three">
-        <Feature icon={<CalendarDays />} title="Booking" text="Clientes eligen servicio, fecha, hora y deposito." />
-        <Feature icon={<Users />} title="Profesionales" text="Agenda por artista, especialista, cabina o sala." />
-        <Feature icon={<Sparkles />} title="Growth" text="Upsells, recordatorios, loyalty e insights con IA." />
+        <Feature icon={<CalendarDays />} title="Cliente" text="Ve servicios, precios desde, duracion, deposito y puede solicitar una cita." />
+        <Feature icon={<LayoutDashboard />} title="Negocio" text="Gestiona agenda diaria, servicios, profesionales, clientes, promociones y landing." />
+        <Feature icon={<ShieldCheck />} title="Digital Atlas" text="Crea tenants, controla planes, mide uso y replica el producto por vertical." />
       </section>
     </Shell>
   );
 }
 
 function Feature({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {
-  return <article className="card">{icon}<h3>{title}</h3><p>{text}</p></article>;
+  return <article className="card feature-card">{icon}<h3>{title}</h3><p>{text}</p></article>;
 }
 
 function PublicBusiness() {
   const { slug } = useParams();
   return (
     <Shell>
-      <nav className="topbar"><Link href="/">Atlas Agenda OS</Link><Link href={`/${slug}/info`}>Info</Link></nav>
-      <section className="business-hero">
-        <span className="eyebrow">Demo multi-tenant</span>
-        <h1>{business.name}</h1>
-        <p>{business.description}</p>
-        <p className="muted">{business.address}</p>
+      <TopNav compact />
+      <section className="business-hero split-hero">
+        <div>
+          <span className="eyebrow">Demo multi-tenant</span>
+          <h1>{business.name}</h1>
+          <p>{business.description}</p>
+          <p className="muted"><MapPin size={16} /> {business.address}</p>
+          <div className="actions">
+            <a className="btn primary" href="#servicios">Reservar servicio</a>
+            <Link href={`/${slug}/info`} className="btn secondary">Ver landing</Link>
+          </div>
+        </div>
+        <div className="status-panel">
+          <span className="pill success">Abierto hoy</span>
+          <h3>Proximo espacio</h3>
+          <strong>Hoy · 4:00 PM</strong>
+          <p>Deposito desde {money(5000)} para confirmar la cita.</p>
+        </div>
       </section>
-      <section className="section-head"><h2>Servicios</h2><p>Catalogo reutilizado del concepto SmartMenu, adaptado a citas.</p></section>
+
+      <section id="servicios" className="section-head">
+        <span className="eyebrow">Catalogo inteligente</span>
+        <h2>Servicios listos para reservar</h2>
+        <p>Esto reemplaza el menu de restaurante: cada servicio tiene precio, duracion, deposito y reglas operativas.</p>
+      </section>
+
       <div className="grid services">
         {services.map(service => <ServiceCard key={service.id} service={service} />)}
+      </div>
+
+      <section className="section-head">
+        <span className="eyebrow">Como funciona</span>
+        <h2>Reserva en 4 pasos</h2>
+      </section>
+      <div className="timeline-grid">
+        {['Elige servicio', 'Selecciona horario', 'Deja datos y notas', 'Confirma deposito'].map((step, index) => (
+          <article className="step-card" key={step}><strong>{index + 1}</strong><span>{step}</span></article>
+        ))}
       </div>
     </Shell>
   );
@@ -57,9 +137,13 @@ function ServiceCard({ service }: { service: typeof services[number] }) {
     <article className="card service-card">
       <span className="pill">{service.category}</span>
       <h3>{service.name}</h3>
-      <p>{service.duration} min · deposito ₡{service.deposit.toLocaleString('es-CR')}</p>
-      <strong>Desde ₡{service.price.toLocaleString('es-CR')}</strong>
-      <Link href={`/booking/${service.id}`} className="btn primary small">Reservar</Link>
+      <p>{service.duration} min · deposito {money(service.deposit)}</p>
+      <strong>Desde {money(service.price)}</strong>
+      <div className="service-meta">
+        <span><Clock size={14} /> Agenda</span>
+        <span><Wallet size={14} /> SINPE</span>
+      </div>
+      <Link href={`/booking/${service.id}`} className="btn primary small">Reservar ahora</Link>
     </article>
   );
 }
@@ -67,42 +151,113 @@ function ServiceCard({ service }: { service: typeof services[number] }) {
 function BusinessInfo() {
   return (
     <Shell>
-      <nav className="topbar"><Link href={`/${business.slug}`}>Volver</Link></nav>
-      <section className="business-hero"><h1>Landing configurable</h1><p>Hero, galeria, portafolio, horarios, mapa, WhatsApp y CTA para agendar.</p></section>
-    </Shell>
-  );
-}
-
-function BookingStatus() {
-  return (
-    <Shell>
-      <section className="business-hero">
-        <span className="eyebrow">Booking flow</span>
-        <h1>Solicitud de cita</h1>
-        <p>Prototipo de flujo: servicio, fecha, hora, profesional, datos del cliente y deposito.</p>
-        <Link href={`/${business.slug}`} className="btn secondary">Volver al catalogo</Link>
+      <TopNav compact />
+      <section className="business-hero split-hero">
+        <div>
+          <span className="eyebrow">Landing del negocio</span>
+          <h1>Ink Beauty Studio</h1>
+          <p>Una pagina publica configurable para vender confianza antes de pedir la cita.</p>
+          <div className="actions"><Link href={`/${business.slug}`} className="btn secondary">Volver al catalogo</Link></div>
+        </div>
+        <div className="mock-gallery"><Image /><span>Hero + portafolio + mapa + horarios</span></div>
       </section>
-    </Shell>
-  );
-}
-
-function AdminDashboard() {
-  return (
-    <Shell>
-      <nav className="topbar"><Link href="/">Atlas</Link><Link href="/super-admin">Superadmin</Link></nav>
-      <section className="section-head"><h1>Panel admin</h1><p>Agenda diaria, citas, servicios, profesionales, clientes, promos y landing.</p></section>
-      <div className="grid two">
-        <article className="card"><LayoutDashboard /><h3>Citas de hoy</h3>{appointments.map(a => <p key={a.id}>{a.time} · {a.service} · {a.status}</p>)}</article>
-        <article className="card"><Scissors /><h3>Servicios</h3>{services.map(s => <p key={s.id}>{s.name} · ₡{s.price.toLocaleString('es-CR')}</p>)}</article>
+      <div className="grid three">
+        <Feature icon={<Image />} title="Portafolio" text="Fotos del estudio, trabajos realizados, certificaciones y ambiente." />
+        <Feature icon={<MessageCircle />} title="CTA WhatsApp" text="Mensaje listo para consulta, valoracion o deposito." />
+        <Feature icon={<Clock />} title="Horarios" text="Disponibilidad visible y editable desde el panel admin." />
       </div>
     </Shell>
   );
 }
 
+function BookingStatus() {
+  const selected = services[0];
+  return (
+    <Shell>
+      <TopNav compact />
+      <section className="booking-layout">
+        <div className="booking-main">
+          <span className="eyebrow">Booking flow</span>
+          <h1>Solicitud de cita</h1>
+          <p>Este flujo sera el reemplazo del carrito: servicio, profesional, horario, datos del cliente y deposito.</p>
+          <div className="booking-steps">
+            <Step done label="Servicio" />
+            <Step active label="Horario" />
+            <Step label="Datos" />
+            <Step label="Confirmar" />
+          </div>
+          <div className="grid two compact-grid">
+            <Option title="Profesional" value="Ana · Tattoo artist" />
+            <Option title="Fecha" value="Viernes 7 · 4:00 PM" />
+            <Option title="Cliente" value="Nombre, telefono y notas" />
+            <Option title="Recordatorio" value="WhatsApp 24h antes" />
+          </div>
+        </div>
+        <aside className="booking-summary card">
+          <span className="pill">Resumen</span>
+          <h3>{selected.name}</h3>
+          <p>{selected.duration} minutos</p>
+          <div className="summary-line"><span>Precio desde</span><strong>{money(selected.price)}</strong></div>
+          <div className="summary-line"><span>Deposito</span><strong>{money(selected.deposit)}</strong></div>
+          <button className="btn primary full">Confirmar solicitud</button>
+          <Link href={`/${business.slug}`} className="center-link">Volver al catalogo</Link>
+        </aside>
+      </section>
+    </Shell>
+  );
+}
+
+function Step({ label, active, done }: { label: string; active?: boolean; done?: boolean }) {
+  return <span className={`flow-step ${active ? 'active' : ''} ${done ? 'done' : ''}`}>{done ? <CheckCircle2 size={14} /> : null}{label}</span>;
+}
+
+function Option({ title, value }: { title: string; value: string }) {
+  return <article className="option-card"><span>{title}</span><strong>{value}</strong></article>;
+}
+
+function AdminDashboard() {
+  return (
+    <Shell>
+      <TopNav compact />
+      <section className="admin-hero">
+        <span className="eyebrow">Panel operativo</span>
+        <h1>Hoy en {business.name}</h1>
+        <p>Vista para que el negocio entienda que debe hacer hoy, que citas tiene, que pagos faltan y que servicios vende mas.</p>
+      </section>
+      <div className="kpi-grid">
+        <Kpi icon={<CalendarDays />} label="Citas hoy" value="2" />
+        <Kpi icon={<Wallet />} label="Depositos pendientes" value="1" />
+        <Kpi icon={<Users />} label="Clientes activos" value="18" />
+        <Kpi icon={<Sparkles />} label="Upsells sugeridos" value="4" />
+      </div>
+      <div className="dashboard-grid">
+        <article className="card wide-card"><LayoutDashboard /><h3>Agenda diaria</h3>{appointments.map(a => <div className="agenda-row" key={a.id}><span>{a.time}</span><strong>{a.service}</strong><em>{a.status}</em></div>)}</article>
+        <article className="card"><Scissors /><h3>Servicios</h3>{services.map(s => <p key={s.id}>{s.name} · {money(s.price)}</p>)}</article>
+        <article className="card"><BellRing /><h3>Automatizaciones</h3><p>Recordatorio 24h antes</p><p>Mensaje post-cita</p><p>Reactivacion a 30 dias</p></article>
+        <article className="card"><Settings /><h3>Landing</h3><p>Hero activo</p><p>Galeria pendiente</p><p>WhatsApp conectado</p></article>
+      </div>
+    </Shell>
+  );
+}
+
+function Kpi({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+  return <article className="kpi-card">{icon}<span>{label}</span><strong>{value}</strong></article>;
+}
+
 function SuperAdmin() {
   return (
     <Shell>
-      <section className="business-hero"><ShieldCheck /><h1>Superadmin Digital Atlas</h1><p>Crear negocios, activar planes, ver metricas y gestionar tenants.</p></section>
+      <TopNav compact />
+      <section className="business-hero">
+        <span className="eyebrow">Digital Atlas control center</span>
+        <h1>Superadmin</h1>
+        <p>Desde aqui se crean negocios, se asignan planes y se mide el uso de cada vertical.</p>
+      </section>
+      <div className="dashboard-grid">
+        <article className="card"><Building2 /><h3>Negocios</h3><p>Ink Beauty Studio · Growth · activo</p><p>Proximo: clinica demo</p></article>
+        <article className="card"><BarChart3 /><h3>Metricas</h3><p>Reservas solicitadas: 24</p><p>Conversion a deposito: 62%</p></article>
+        <article className="card"><UserCheck /><h3>Planes</h3><p>Starter: landing + reservas</p><p>Operations: agenda + staff</p><p>Growth: IA + automatizaciones</p></article>
+      </div>
     </Shell>
   );
 }

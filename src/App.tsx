@@ -5,23 +5,21 @@ import {
   LayoutDashboard,
   Sparkles,
   Users,
-  Scissors,
   ShieldCheck,
   Clock,
   Wallet,
   MessageCircle,
   MapPin,
-  CheckCircle2,
   ArrowRight,
   Building2,
-  BellRing,
   BarChart3,
   Image,
-  Settings,
   UserCheck,
 } from 'lucide-react';
-import { business, services, appointments } from './data/demo';
+import { business, services } from './data/demo';
 import { APP_NAME, APP_TAGLINE } from './domain/core';
+import { BookingExperience } from './components/BookingExperience';
+import { AdminWorkspace } from './components/AdminWorkspace';
 
 const money = (value: number) => `₡${value.toLocaleString('es-CR')}`;
 
@@ -171,48 +169,12 @@ function BusinessInfo() {
 }
 
 function BookingStatus() {
-  const selected = services[0];
   return (
     <Shell>
       <TopNav compact />
-      <section className="booking-layout">
-        <div className="booking-main">
-          <span className="eyebrow">Booking flow</span>
-          <h1>Solicitud de cita</h1>
-          <p>Este flujo sera el reemplazo del carrito: servicio, profesional, horario, datos del cliente y deposito.</p>
-          <div className="booking-steps">
-            <Step done label="Servicio" />
-            <Step active label="Horario" />
-            <Step label="Datos" />
-            <Step label="Confirmar" />
-          </div>
-          <div className="grid two compact-grid">
-            <Option title="Profesional" value="Ana · Tattoo artist" />
-            <Option title="Fecha" value="Viernes 7 · 4:00 PM" />
-            <Option title="Cliente" value="Nombre, telefono y notas" />
-            <Option title="Recordatorio" value="WhatsApp 24h antes" />
-          </div>
-        </div>
-        <aside className="booking-summary card">
-          <span className="pill">Resumen</span>
-          <h3>{selected.name}</h3>
-          <p>{selected.duration} minutos</p>
-          <div className="summary-line"><span>Precio desde</span><strong>{money(selected.price)}</strong></div>
-          <div className="summary-line"><span>Deposito</span><strong>{money(selected.deposit)}</strong></div>
-          <button className="btn primary full">Confirmar solicitud</button>
-          <Link href={`/${business.slug}`} className="center-link">Volver al catalogo</Link>
-        </aside>
-      </section>
+      <BookingExperience />
     </Shell>
   );
-}
-
-function Step({ label, active, done }: { label: string; active?: boolean; done?: boolean }) {
-  return <span className={`flow-step ${active ? 'active' : ''} ${done ? 'done' : ''}`}>{done ? <CheckCircle2 size={14} /> : null}{label}</span>;
-}
-
-function Option({ title, value }: { title: string; value: string }) {
-  return <article className="option-card"><span>{title}</span><strong>{value}</strong></article>;
 }
 
 function AdminDashboard() {
@@ -230,12 +192,7 @@ function AdminDashboard() {
         <Kpi icon={<Users />} label="Clientes activos" value="18" />
         <Kpi icon={<Sparkles />} label="Upsells sugeridos" value="4" />
       </div>
-      <div className="dashboard-grid">
-        <article className="card wide-card"><LayoutDashboard /><h3>Agenda diaria</h3>{appointments.map(a => <div className="agenda-row" key={a.id}><span>{a.time}</span><strong>{a.service}</strong><em>{a.status}</em></div>)}</article>
-        <article className="card"><Scissors /><h3>Servicios</h3>{services.map(s => <p key={s.id}>{s.name} · {money(s.price)}</p>)}</article>
-        <article className="card"><BellRing /><h3>Automatizaciones</h3><p>Recordatorio 24h antes</p><p>Mensaje post-cita</p><p>Reactivacion a 30 dias</p></article>
-        <article className="card"><Settings /><h3>Landing</h3><p>Hero activo</p><p>Galeria pendiente</p><p>WhatsApp conectado</p></article>
-      </div>
+      <AdminWorkspace />
     </Shell>
   );
 }

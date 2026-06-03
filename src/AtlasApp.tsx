@@ -1,15 +1,16 @@
 import { useState, type ReactNode } from 'react';
 import { Link, Route, Switch, useParams } from 'wouter';
 import { toast } from 'sonner';
-import { BarChart3, Building2, CalendarDays, Dumbbell, Image, MapPin, Package, PlusCircle, Sparkles, Ticket, Upload, UserCheck, Users, Wallet } from 'lucide-react';
+import { BarChart3, Building2, CalendarDays, Dumbbell, Image, MapPin, Package, PlusCircle, Sparkles, Ticket, UserCheck, Users, Wallet } from 'lucide-react';
 import { BookingExperience } from './components/BookingExperience';
 import { AdminWorkspace } from './components/AdminWorkspace';
 import { StaffPortal } from './components/StaffPortal';
 import { AdminLogin, ClientLogin, SuperAdminLogin } from './components/LoginScreens';
+import { CustomerDashboardRenderer } from './components/CustomerDashboardRenderer';
 import { AdminLayout, SuperAdminLayout } from './layouts/AdminLayout';
-import { ClientLayout } from './layouts/ClientLayout';
 import { PublicLayout } from './layouts/PublicLayout';
 import { APP_NAME, APP_TAGLINE } from './domain/core';
+import { resolveCustomerDashboard } from './platform/customerExperience';
 import { useAtlasStore } from './state/AtlasStore';
 
 const money = (value: number) => `₡${value.toLocaleString('es-CR')}`;
@@ -79,15 +80,11 @@ function InfoPage() {
 }
 
 function ClientPortal() {
-  const { memberships, uploadReceipt } = useAtlasStore();
-  const [section, setSection] = useState('resumen');
-  const pending = memberships.find((item) => item.status !== 'paid');
-  return (
-    <ClientLayout activeSection={section} onSectionChange={setSection} clientName="Maria Lopez">
-      <section className="client-hero"><div><span className="eyebrow">Portal cliente</span><h1>Mi espacio Atlas</h1><p>Citas, pagos, comprobantes, productos, puntos y promociones por negocio.</p></div><div className="client-score"><span>240</span><small>puntos</small></div></section>
-      {section === 'pagos' ? <div className="dashboard-grid"><article className="card"><Upload /><h3>Comprobante SINPE</h3><p>{pending ? `${pending.plan} · ${pending.due}` : 'No hay pagos pendientes'}</p><button className="btn btn-primary btn-full" disabled={!pending} onClick={() => { if (!pending) return; uploadReceipt(pending.id, 'sinpe-demo.jpg'); toast.success('Comprobante subido a revisión'); }}>Subir comprobante demo</button></article><ListCard icon={<Wallet />} title="Historial" items={['Depósito cita · Pendiente', 'Mensualidad · En revisión']} /></div> : <div className="dashboard-grid"><ListCard icon={<CalendarDays />} title="Mis citas" items={['Ink Beauty Studio · Cita confirmada', 'Flash day · Próximamente']} /><ListCard icon={<Dumbbell />} title="Mis membresías" items={memberships.map((m) => `${m.plan} · ${m.due}`)} /><ListCard icon={<Sparkles />} title="Promos y puntos" items={['240 puntos disponibles', 'Promo de bienvenida activa']} /></div>}
-    </ClientLayout>
-  );
+  const { getTenant } = useAtlasStore();
+  const tenant = getTenant('atlas-fight-academy');
+  const spec = resolveCustomerDashboard(tenant.vertical);
+  const [section, setSection] = useState(spec.nav[0]?.id || 'inicio');
+  return <CustomerDashboardRenderer tenant={tenant} activeSection={section} onSectionChange={setSection} />;
 }
 
 function AdminPage() {

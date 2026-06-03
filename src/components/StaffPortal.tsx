@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { CalendarDays, CheckCircle2, Clock, Dumbbell, Sparkles, Users, Wallet } from 'lucide-react';
 import { StaffLayout } from '../layouts/AdminLayout';
 import { useAtlasStore } from '../state/AtlasStore';
@@ -67,6 +67,6 @@ export function StaffPortal({ tenantSlug }: { tenantSlug: string }) {
   );
 }
 
-function StaffCard({ icon, title, items }: { icon: React.ReactNode; title: string; items: string[] }) {
+function StaffCard({ icon, title, items }: { icon: ReactNode; title: string; items: string[] }) {
   return <div className="card"><div className="staff-card-icon">{icon}</div><h3 style={{ fontSize: 16, marginBottom: 10 }}>{title}</h3>{items.length ? items.map((item) => <div className="staff-item" key={item}><span>{item}</span></div>) : <p>Sin registros.</p>}</div>;
 }

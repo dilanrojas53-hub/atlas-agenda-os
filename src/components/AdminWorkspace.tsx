@@ -8,11 +8,12 @@ const professionals = ['Ana · Especialista', 'Marco · Profesional', 'Sofia · 
 
 type TenantLike = { slug: string; vertical: string; name: string };
 
-export function AdminWorkspace({ tenant, activeTab }: { tenant: TenantLike; activeTab: string }) {
+export function AdminWorkspace({ tenant, activeTab }: { tenant: TenantLike; activeTab?: string }) {
   const isMembership = tenant.vertical === 'membership';
+  const currentTab = activeTab || (isMembership ? 'Membresías' : 'Agenda');
   return (
     <section className="tenant-workspace">
-      {isMembership ? <MembershipAdminTab activeTab={activeTab} tenantSlug={tenant.slug} /> : <AppointmentAdminTab activeTab={activeTab} tenantSlug={tenant.slug} />}
+      {isMembership ? <MembershipAdminTab activeTab={currentTab} tenantSlug={tenant.slug} /> : <AppointmentAdminTab activeTab={currentTab} tenantSlug={tenant.slug} />}
     </section>
   );
 }

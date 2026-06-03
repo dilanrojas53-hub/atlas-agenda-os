@@ -8,7 +8,7 @@
 * { box-sizing: border-box; }
 body { margin: 0; min-height: 100vh; background: radial-gradient(circle at top left, #312e81 0, #0b1024 28rem, #07070a 60rem); }
 a { color: inherit; text-decoration: none; }
-button { font: inherit; }
+button, input, textarea { font: inherit; }
 
 .app-shell { width: min(1160px, calc(100% - 32px)); margin: 0 auto; padding: 22px 0 72px; }
 .topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,.08); background: rgba(7,7,10,.72); backdrop-filter: blur(18px); color: #e4e4e7; font-weight: 800; }
@@ -24,6 +24,7 @@ button { font: inherit; }
 .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
 .btn { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; padding: 13px 19px; font-weight: 900; border: 1px solid rgba(255,255,255,.13); transition: transform .18s ease, border-color .18s ease; }
 .btn:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.28); }
+.btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 .btn.primary { background: linear-gradient(135deg, #8b5cf6, #ec4899 48%, #f59e0b); color: white; box-shadow: 0 14px 44px rgba(124,58,237,.25); }
 .btn.secondary { background: rgba(255,255,255,.07); color: #fafafa; }
 .btn.small { padding: 10px 14px; font-size: 13px; margin-top: 14px; }
@@ -64,30 +65,49 @@ button { font: inherit; }
 .flow-step { display: inline-flex; align-items: center; gap: 6px; padding: 9px 12px; border-radius: 999px; background: rgba(255,255,255,.06); color: #a1a1aa; font-weight: 900; font-size: 13px; }
 .flow-step.active { color: #fbbf24; background: rgba(245,158,11,.11); }
 .flow-step.done { color: #86efac; background: rgba(34,197,94,.09); }
-.compact-grid { margin-top: 18px; }
-.option-card span { display: block; color: #a1a1aa; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .12em; }
-.option-card strong { display: block; margin-top: 9px; }
+.booking-form { display: grid; gap: 22px; }
+.form-section { display: grid; gap: 12px; padding-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.form-section:last-child { border-bottom: 0; padding-bottom: 0; }
+.form-section h3 { margin: 0; font-size: 18px; }
+.choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.choice-button { border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); color: #e4e4e7; border-radius: 18px; padding: 13px 14px; font-weight: 900; text-align: left; cursor: pointer; }
+.choice-button.selected { color: white; border-color: rgba(245,158,11,.65); background: linear-gradient(135deg, rgba(124,58,237,.35), rgba(245,158,11,.18)); }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.field { display: grid; gap: 7px; color: #d4d4d8; font-weight: 800; }
+.field span { font-size: 12px; color: #a1a1aa; text-transform: uppercase; letter-spacing: .12em; }
+.field input, .field textarea { width: 100%; border: 1px solid rgba(255,255,255,.1); background: rgba(0,0,0,.25); color: white; border-radius: 18px; padding: 14px 15px; outline: none; }
+.field textarea { min-height: 110px; resize: vertical; }
+.field input:focus, .field textarea:focus { border-color: rgba(245,158,11,.6); }
+.form-hint { display: block; margin-top: 10px; color: #fbbf24; text-align: center; }
 .booking-summary { position: sticky; top: 90px; }
 .summary-line { display: flex; justify-content: space-between; gap: 14px; border-top: 1px solid rgba(255,255,255,.08); padding: 14px 0; color: #c4c4cc; }
-.summary-line strong { color: white; }
+.summary-line strong { color: white; text-align: right; }
+.confirmation-card h2 { font-size: 38px; margin: 12px 0; }
+.confirmation-card svg { color: #86efac; }
 
 .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 22px 0; }
 .kpi-card { border-radius: 24px; }
 .kpi-card svg { color: #f59e0b; }
 .kpi-card span { display: block; color: #a1a1aa; margin-top: 12px; font-weight: 800; }
 .kpi-card strong { display: block; font-size: 32px; margin-top: 5px; }
+.admin-tabs { display: flex; gap: 10px; overflow-x: auto; padding: 8px 0 18px; margin: 8px 0 8px; }
+.admin-tabs button { border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.06); color: #c4c4cc; border-radius: 999px; padding: 10px 14px; font-weight: 900; white-space: nowrap; cursor: pointer; }
+.admin-tabs button.active { color: white; border-color: rgba(245,158,11,.6); background: linear-gradient(135deg, rgba(124,58,237,.45), rgba(245,158,11,.18)); }
 .dashboard-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 18px; }
 .wide-card { grid-row: span 2; }
 .agenda-row { display: grid; grid-template-columns: 84px 1fr auto; gap: 12px; align-items: center; padding: 13px 0; border-top: 1px solid rgba(255,255,255,.08); }
 .agenda-row span, .agenda-row em { color: #a1a1aa; font-style: normal; }
+.admin-table { display: grid; gap: 8px; margin-top: 16px; }
+.admin-table > div { display: grid; grid-template-columns: 1.2fr .8fr .6fr .6fr; gap: 12px; align-items: center; padding: 13px 0; border-top: 1px solid rgba(255,255,255,.08); color: #c4c4cc; }
+.admin-table strong { color: white; }
 .mock-gallery { min-height: 260px; display: grid; place-items: center; text-align: center; color: #c4c4cc; }
 .mock-gallery svg { color: #f59e0b; width: 44px; height: 44px; margin-bottom: 10px; }
 
 @media (max-width: 900px) {
   .home-hero, .split-hero, .booking-layout, .dashboard-grid { grid-template-columns: 1fr; }
-  .grid.three, .grid.two, .kpi-grid, .timeline-grid { grid-template-columns: 1fr; }
+  .grid.three, .grid.two, .kpi-grid, .timeline-grid, .form-grid { grid-template-columns: 1fr; }
   .hero, .business-hero, .admin-hero { padding-top: 42px; }
   .nav-actions { gap: 10px; font-size: 12px; }
   .booking-summary { position: static; }
-  .agenda-row { grid-template-columns: 1fr; gap: 4px; }
+  .agenda-row, .admin-table > div { grid-template-columns: 1fr; gap: 4px; }
 }

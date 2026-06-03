@@ -5,6 +5,7 @@ import { BarChart3, Building2, CalendarDays, Clock, Dumbbell, Image, MapPin, Pac
 import { BookingExperience } from './components/BookingExperience';
 import { AdminWorkspace } from './components/AdminWorkspace';
 import { StaffPortal } from './components/StaffPortal';
+import { AdminLogin, ClientLogin, SuperAdminLogin } from './components/LoginScreens';
 import { APP_NAME, APP_TAGLINE } from './domain/core';
 import { useAtlasStore } from './state/AtlasStore';
 
@@ -20,7 +21,7 @@ function Nav({ area, slug }: { area: Area; slug?: string }) {
     <nav className={`topbar role-${area}`}>
       <Link href="/" className="brand-link">Atlas Agenda OS</Link>
       <div className="nav-actions">
-        {area === 'public' && <><Link href="/ink-beauty-studio">Citas</Link><Link href="/atlas-fight-academy">Academia</Link><Link href="/client/demo">Cliente</Link></>}
+        {area === 'public' && <><Link href="/ink-beauty-studio">Citas</Link><Link href="/atlas-fight-academy">Academia</Link><Link href="/client/login">Cliente</Link></>}
         {area === 'client' && <><Link href="/client/demo">Mi cuenta</Link><Link href="/ink-beauty-studio">Reservar</Link><Link href="/atlas-fight-academy">Membresía</Link></>}
         {area === 'admin' && <><Link href={`/${slug}`}>Público</Link><Link href={`/admin/${slug}`}>Admin</Link><Link href={`/staff/${slug}`}>Staff</Link><Link href="/super-admin">Digital Atlas</Link></>}
         {area === 'super' && <><Link href="/super-admin">Tenants</Link><Link href="/admin/ink-beauty-studio">Admin demo</Link><Link href="/ink-beauty-studio">Público</Link></>}
@@ -59,7 +60,7 @@ function PublicTenant() {
     <Shell area="public">
       <Nav area="public" slug={tenant.slug} />
       <section className="business-hero split-hero">
-        <div><span className="eyebrow">{tenant.label}</span><h1>{tenant.heroTitle || tenant.name}</h1><p>{tenant.description}</p><p className="muted"><MapPin size={16} /> {tenant.address}</p><div className="module-row">{tenant.modules.map(m => <span key={m}>{m}</span>)}</div><div className="actions"><Link className="btn primary" href={isMembership ? '/client/demo' : '#catalog'}>{tenant.ctaLabel || (isMembership ? 'Entrar a mi cuenta' : 'Reservar')}</Link><Link className="btn secondary" href={`/${tenant.slug}/info`}>Más información</Link></div></div>
+        <div><span className="eyebrow">{tenant.label}</span><h1>{tenant.heroTitle || tenant.name}</h1><p>{tenant.description}</p><p className="muted"><MapPin size={16} /> {tenant.address}</p><div className="module-row">{tenant.modules.map(m => <span key={m}>{m}</span>)}</div><div className="actions"><Link className="btn primary" href={isMembership ? '/client/login' : '#catalog'}>{tenant.ctaLabel || (isMembership ? 'Entrar a mi cuenta' : 'Reservar')}</Link><Link className="btn secondary" href={`/${tenant.slug}/info`}>Más información</Link></div></div>
         <aside className="status-panel"><span className="pill success">{isMembership ? 'Membresías' : 'Agenda'}</span><h3>{isMembership ? 'Portal de pagos' : 'Próximo espacio'}</h3><strong>{isMembership ? `${memberships.length} clientes` : 'Hoy · 4:00 PM'}</strong><p>{isMembership ? 'Comprobantes desde portal cliente y aprobación por admin.' : 'Depósito por SINPE para confirmar.'}</p></aside>
       </section>
       {isMembership ? <section className="grid three"><ListCard icon={<Package />} title="Productos" items={products.map(p => `${p.name} · ${money(p.price)}`)} /><ListCard icon={<Ticket />} title="Eventos" items={events.map(e => `${e.title} · ${e.date}`)} /><ListCard icon={<Wallet />} title="Pagos" items={['Mensualidad SINPE', 'Comprobante en portal', 'Validación por admin']} /></section> : <section id="catalog" className="grid services">{services.map(s => <article className="card service-card" key={s.id}><span className="pill">{s.category}</span><h3>{s.name}</h3><p>{s.duration} min · depósito {money(s.deposit)}</p><strong>Desde {money(s.price)}</strong><Link className="btn primary small" href={`/booking/${s.id}`}>Reservar</Link></article>)}</section>}
@@ -114,5 +115,5 @@ function Kpi({ icon, label, value }: { icon: ReactNode; label: string; value: st
 }
 
 export default function AtlasApp() {
-  return <Switch><Route path="/" component={Home} /><Route path="/client/demo" component={ClientPortal} /><Route path="/:slug/info" component={InfoPage} /><Route path="/booking/:id" component={() => <Shell area="public"><Nav area="public" /><BookingExperience /></Shell>} /><Route path="/admin/:slug" component={AdminPage} /><Route path="/staff/:slug" component={StaffPage} /><Route path="/super-admin" component={SuperAdmin} /><Route path="/:slug" component={PublicTenant} /></Switch>;
+  return <Switch><Route path="/" component={Home} /><Route path="/client/login" component={ClientLogin} /><Route path="/client/demo" component={ClientPortal} /><Route path="/:slug/info" component={InfoPage} /><Route path="/booking/:id" component={() => <Shell area="public"><Nav area="public" /><BookingExperience /></Shell>} /><Route path="/admin/:slug/login" component={AdminLogin} /><Route path="/admin/:slug" component={AdminPage} /><Route path="/staff/:slug" component={StaffPage} /><Route path="/super-admin/login" component={SuperAdminLogin} /><Route path="/super-admin" component={SuperAdmin} /><Route path="/:slug" component={PublicTenant} /></Switch>;
 }

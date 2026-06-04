@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { appointments as seedAppointments, events as seedEvents, memberships as seedMemberships, products as seedProducts, services as seedServices, tenants as seedTenants } from '../data/demo';
 import { loadSupabaseSnapshot } from './supabaseHydration';
+import { addCatalogItemRemote, addServiceRemote, createAppointmentRemote, updateMembershipStatusRemote } from './supabaseMutations';
 
 type Tenant = typeof seedTenants[keyof typeof seedTenants] & {
   plan?: 'starter' | 'operations' | 'growth';
@@ -165,12 +166,28 @@ export function AtlasStoreProvider({ children }: { children: ReactNode }) {
       }));
     },
     addService: (input) => {
-      const service = { id: `svc-${Date.now()}`, ...input } as Service;
+      const localId = `svc-${Date.now()}`;
+      const service = { id: localId, ...input } as Service;
       setState(current => ({ ...current, services: [service, ...current.services] }));
+      void addServiceRemote(input).then(remoteId => {
+        if (!remoteId) return;
+        setState(current => ({
+          ...current,
+          services: current.services.map(item => item.id === localId ? { ...item, id: remoteId } as Service : item),
+        }));
+      });
     },
     createAppointment: (input) => {
-      const appointment = { id: `apt-${Date.now()}`, status: 'pending_deposit', depositStatus: 'pending', ...input } as Appointment;
+      const localId = `apt-${Date.now()}`;
+      const appointment = { id: localId, status: 'pending_deposit', depositStatus: 'pending', ...input } as Appointment;
       setState(current => ({ ...current, appointments: [appointment, ...current.appointments] }));
+      void createAppointmentRemote(input).then(remoteId => {
+        if (!remoteId) return;
+        setState(current => ({
+          ...current,
+          appointments: current.appointments.map(item => item.id === localId ? { ...item, id: remoteId } as Appointment : item),
+        }));
+      });
     },
     updateAppointmentStatus: (appointmentId, status) => {
       setState(current => ({
@@ -183,24 +200,37 @@ export function AtlasStoreProvider({ children }: { children: ReactNode }) {
         ...current,
         memberships: current.memberships.map(item => item.id === membershipId ? { ...item, status: 'receipt_uploaded', due: 'Comprobante en revisión', receiptName, updatedAt: new Date().toLocaleString('es-CR') } : item),
       }));
+      void updateMembershipStatusRemote(membershipId, 'receipt_uploaded');
     },
     approveReceipt: (membershipId) => {
       setState(current => ({
         ...current,
         memberships: current.memberships.map(item => item.id === membershipId ? { ...item, status: 'paid', due: 'Pagado junio', updatedAt: new Date().toLocaleString('es-CR') } : item),
       }));
+      void updateMembershipStatusRemote(membershipId, 'paid');
     },
     rejectReceipt: (membershipId) => {
       setState(current => ({
         ...current,
         memberships: current.memberships.map(item => item.id === membershipId ? { ...item, status: 'rejected', due: 'Reenviar comprobante', updatedAt: new Date().toLocaleString('es-CR') } : item),
       }));
+      void updateMembershipStatusRemote(membershipId, 'rejected');
     },
     addProduct: (tenantSlug, name, price) => {
-      setState(current => ({ ...current, products: [{ id: `prd-${Date.now()}`, tenantSlug, name, category: 'Nuevo', price }, ...current.products] }));
+      const localId = `prd-${Date.now()}`;
+      setState(current => ({ ...current, products: [{ id: localId, tenantSlug, name, category: 'Nuevo', price }, ...current.products] }));
+      void addCatalogItemRemote({ tenantSlug, kind: 'product', name, price }).then(remoteId => {
+        if (!remoteId) return;
+        setState(current => ({ ...current, products: current.products.map(item => item.id === localId ? { ...item, id: remoteId } : item) }));
+      });
     },
     addEvent: (tenantSlug, title, date, price) => {
-      setState(current => ({ ...current, events: [{ id: `evt-${Date.now()}`, tenantSlug, title, date, price }, ...current.events] }));
+      const localId = `evt-${Date.now()}`;
+      setState(current => ({ ...current, events: [{ id: localId, tenantSlug, title, date, price }, ...current.events] }));
+      void addCatalogItemRemote({ tenantSlug, kind: 'event', name: title, price }).then(remoteId => {
+        if (!remoteId) return;
+        setState(current => ({ ...current, events: current.events.map(item => item.id === localId ? { ...item, id: remoteId } : item) }));
+      });
     },
     resetDemo: () => setState(initialState()),
   }), [state]);

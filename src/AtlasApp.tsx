@@ -59,7 +59,7 @@ function PublicTenant() {
           <p>{tenant.description}</p>
           <p className="inline-muted"><MapPin size={16} /> {tenant.address}</p>
           <div className="module-row">{tenant.modules.map((module) => <span key={module}>{module}</span>)}</div>
-          <div className="hero-actions"><Link className="btn btn-primary" href={isMembership ? '/client/login' : '#catalog'}>{tenant.ctaLabel || (isMembership ? 'Entrar a mi cuenta' : 'Reservar')}</Link><Link className="btn btn-secondary" href={`/${tenant.slug}/info`}>Más información</Link></div>
+          <div className="hero-actions"><Link className="btn btn-primary" href={isMembership ? `/client/${tenant.slug}` : '#catalog'}>{tenant.ctaLabel || (isMembership ? 'Entrar a mi cuenta' : 'Reservar')}</Link><Link className="btn btn-secondary" href={`/${tenant.slug}/info`}>Más información</Link></div>
         </div>
         <aside className="tenant-status-card"><span className="badge badge-green">{isMembership ? 'Membresías' : 'Agenda'}</span><h3>{isMembership ? 'Portal de pagos' : 'Próximo espacio'}</h3><strong>{isMembership ? `${memberships.length} clientes` : 'Hoy · 4:00 PM'}</strong><p>{isMembership ? 'Comprobantes desde portal cliente y aprobación por admin.' : 'Depósito por SINPE para confirmar.'}</p></aside>
       </section>
@@ -80,8 +80,9 @@ function InfoPage() {
 }
 
 function ClientPortal() {
+  const { slug } = useParams();
   const { getTenant } = useAtlasStore();
-  const tenant = getTenant('atlas-fight-academy');
+  const tenant = getTenant(slug && slug !== 'demo' ? slug : 'atlas-fight-academy');
   const spec = resolveCustomerDashboard(tenant.vertical);
   const [section, setSection] = useState(spec.nav[0]?.id || 'inicio');
   return <CustomerDashboardRenderer tenant={tenant} activeSection={section} onSectionChange={setSection} />;
@@ -118,5 +119,5 @@ function Kpi({ icon, label, value }: { icon: ReactNode; label: string; value: st
 }
 
 export default function AtlasApp() {
-  return <Switch><Route path="/" component={Home} /><Route path="/client/login" component={ClientLogin} /><Route path="/client/demo" component={ClientPortal} /><Route path="/:slug/info" component={InfoPage} /><Route path="/booking/:id" component={() => <PublicLayout><BookingExperience /></PublicLayout>} /><Route path="/admin/:slug/login" component={AdminLogin} /><Route path="/admin/:slug" component={AdminPage} /><Route path="/staff/:slug" component={StaffPage} /><Route path="/super-admin/login" component={SuperAdminLogin} /><Route path="/super-admin" component={SuperAdmin} /><Route path="/:slug" component={PublicTenant} /></Switch>;
+  return <Switch><Route path="/" component={Home} /><Route path="/client/login" component={ClientLogin} /><Route path="/client/demo" component={ClientPortal} /><Route path="/client/:slug" component={ClientPortal} /><Route path="/:slug/info" component={InfoPage} /><Route path="/booking/:id" component={() => <PublicLayout><BookingExperience /></PublicLayout>} /><Route path="/admin/:slug/login" component={AdminLogin} /><Route path="/admin/:slug" component={AdminPage} /><Route path="/staff/:slug" component={StaffPage} /><Route path="/super-admin/login" component={SuperAdminLogin} /><Route path="/super-admin" component={SuperAdmin} /><Route path="/:slug" component={PublicTenant} /></Switch>;
 }

@@ -25,6 +25,11 @@ function iconFor(key: string) {
   return icons[key] || <Home size={20} />;
 }
 
+function exitClientZone(slug: string) {
+  window.localStorage.removeItem(`atlas-gate:client:${slug}`);
+  window.location.href = `/${slug}`;
+}
+
 export function CustomerDashboardRenderer({ tenant, activeSection, onSectionChange }: CustomerDashboardRendererProps) {
   const spec = resolveCustomerDashboard(tenant.vertical);
   const widgets = spec.sections[activeSection] || spec.sections.inicio || [];
@@ -37,7 +42,7 @@ export function CustomerDashboardRenderer({ tenant, activeSection, onSectionChan
       <header className="client-topbar">
         <LinkBack slug={tenant.slug} />
         <span className="client-brand">{tenant.name}</span>
-        <div className="client-user"><span className="badge badge-green"><span className="dot dot-green" /> {isMembership ? 'Alumno' : 'Cliente'}</span><div className="avatar">ML</div></div>
+        <div className="client-user"><span className="badge badge-green"><span className="dot dot-green" /> {isMembership ? 'Alumno' : 'Cliente'}</span><button className="client-exit" onClick={() => exitClientZone(tenant.slug)}>Salir</button><div className="avatar">ML</div></div>
       </header>
       <main className="client-main client-dashboard-main">
         <section className="client-hero client-hero-premium">

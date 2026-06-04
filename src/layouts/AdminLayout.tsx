@@ -8,7 +8,7 @@ import {
 type TenantLike = { slug: string; vertical: string; name: string; label?: string };
 
 const APPOINTMENT_NAV = [
-  { section: 'Operaciones', items: [
+  { section: 'Operación', items: [
     { tab: 'Agenda', icon: <CalendarDays size={16} /> },
     { tab: 'Citas', icon: <Receipt size={16} /> },
     { tab: 'Servicios', icon: <Scissors size={16} /> },
@@ -25,14 +25,14 @@ const APPOINTMENT_NAV = [
 ];
 
 const MEMBERSHIP_NAV = [
-  { section: 'Operaciones', items: [
+  { section: 'Operación', items: [
     { tab: 'Membresías', icon: <Dumbbell size={16} /> },
     { tab: 'Comprobantes', icon: <Wallet size={16} /> },
     { tab: 'Productos', icon: <Package size={16} /> },
     { tab: 'Eventos', icon: <Ticket size={16} /> },
   ]},
-  { section: 'Clientes y crecimiento', items: [
-    { tab: 'Clientes', icon: <Users size={16} /> },
+  { section: 'Alumnos y crecimiento', items: [
+    { tab: 'Clientes', label: 'Alumnos', icon: <Users size={16} /> },
     { tab: 'Promos', icon: <Sparkles size={16} /> },
   ]},
   { section: 'Configuración', items: [
@@ -54,34 +54,35 @@ export function AdminLayout({ tenant, activeTab, onTabChange, children }: {
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const nav = tenant.vertical === 'membership' ? MEMBERSHIP_NAV : APPOINTMENT_NAV;
+  const isMembership = tenant.vertical === 'membership';
+  const nav = isMembership ? MEMBERSHIP_NAV : APPOINTMENT_NAV;
 
   return (
     <div className="admin-shell">
-      <button className="admin-mobile-menu" onClick={() => setOpen(true)}><Menu size={18} /> Menu</button>
+      <button className="admin-mobile-menu" onClick={() => setOpen(true)}><Menu size={18} /> Menú</button>
       <aside className={`admin-sidebar ${open ? 'open' : ''}`}>
         <div className="admin-sidebar-head">
           <Link href="/" className="admin-brand">Atlas OS</Link>
           <button className="admin-close" onClick={() => setOpen(false)}><X size={18} /></button>
         </div>
-        <div className="tenant-chip"><span>{tenant.vertical}</span><strong>{tenant.name}</strong></div>
+        <div className="tenant-chip"><span>{isMembership ? 'Academia / membresías' : 'Servicios por cita'}</span><strong>{tenant.name}</strong></div>
         <nav className="admin-nav">
           {nav.map(group => (
             <div key={group.section} className="admin-nav-group">
               <p>{group.section}</p>
               {group.items.map(item => (
                 <button key={item.tab} className={activeTab === item.tab ? 'active' : ''} onClick={() => { onTabChange(item.tab); setOpen(false); }}>
-                  {item.icon}<span>{item.tab}</span>
+                  {item.icon}<span>{'label' in item ? item.label : item.tab}</span>
                 </button>
               ))}
             </div>
           ))}
         </nav>
-        <div className="admin-sidebar-foot"><Link href={`/${tenant.slug}`}><ChevronLeft size={14} /> Vista pública</Link><Link href={`/staff/${tenant.slug}`}>Staff portal</Link></div>
+        <div className="admin-sidebar-foot"><Link href={`/${tenant.slug}`}><ChevronLeft size={14} /> Vista pública</Link><Link href={`/staff/${tenant.slug}`}>Vista staff</Link></div>
       </aside>
       <main className="admin-main">
         <header className="admin-topbar">
-          <div><span className="eyebrow">Admin workspace</span><h1>{tenant.name}</h1></div>
+          <div><span className="eyebrow">Panel del negocio</span><h1>{tenant.name}</h1></div>
           <div className="admin-top-actions"><span className="badge badge-amber"><span className="dot dot-amber" /> Activo</span><Link className="btn btn-sm btn-secondary" href="/super-admin">Digital Atlas</Link></div>
         </header>
         {children}
@@ -95,7 +96,7 @@ export function SuperAdminLayout({ children }: { children: ReactNode }) {
     <div className="super-shell">
       <aside className="super-sidebar">
         <Link href="/super-admin" className="admin-brand">Digital Atlas</Link>
-        <nav className="admin-nav"><div className="admin-nav-group"><p>Control center</p><Link href="/super-admin"><Building2 size={16} /> Tenants</Link><Link href="/super-admin"><BarChart3 size={16} /> Métricas</Link><Link href="/super-admin"><Settings size={16} /> Sistema</Link></div></nav>
+        <nav className="admin-nav"><div className="admin-nav-group"><p>Control interno</p><Link href="/super-admin"><Building2 size={16} /> Negocios</Link><Link href="/super-admin"><BarChart3 size={16} /> Métricas</Link><Link href="/super-admin"><Settings size={16} /> Sistema</Link></div></nav>
       </aside>
       <main className="super-main">{children}</main>
     </div>
@@ -109,11 +110,11 @@ export function StaffLayout({ tenant, activeTab, onTabChange, children }: { tena
         <div className="admin-sidebar-head"><Link href="/" className="admin-brand">{tenant.name}</Link></div>
         <nav className="admin-nav">
           <div className="admin-nav-group"><p>Vista staff</p>{STAFF_NAV.map(item => <button key={item.tab} className={activeTab === item.tab ? 'active' : ''} onClick={() => onTabChange(item.tab)}>{item.icon}<span>{item.tab}</span></button>)}</div>
-          <div className="admin-nav-group"><p>Acceso</p><Link href={`/${tenant.slug}`}><ChevronLeft size={16} /> Vista pública</Link><Link href={`/admin/${tenant.slug}`}>Admin</Link></div>
+          <div className="admin-nav-group"><p>Acceso</p><Link href={`/${tenant.slug}`}><ChevronLeft size={16} /> Vista pública</Link><Link href={`/admin/${tenant.slug}`}>Panel del negocio</Link></div>
         </nav>
       </aside>
       <main className="admin-main">
-        <header className="admin-topbar"><span style={{ fontSize: 13, fontWeight: 600 }}>Staff Portal · {tenant.name}</span><span className="badge badge-sky"><span className="dot dot-green" /> Turno activo</span></header>
+        <header className="admin-topbar"><span style={{ fontSize: 13, fontWeight: 600 }}>Vista staff · {tenant.name}</span><span className="badge badge-sky"><span className="dot dot-green" /> Turno activo</span></header>
         {children}
       </main>
     </div>

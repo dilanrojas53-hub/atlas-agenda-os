@@ -5,7 +5,6 @@ import { BarChart3, Building2, CalendarDays, Dumbbell, Image, MapPin, Package, P
 import { BookingExperience } from './components/BookingExperience';
 import { AdminWorkspace } from './components/AdminWorkspace';
 import { StaffPortal } from './components/StaffPortal';
-import { AdminLogin, ClientLogin, SuperAdminLogin } from './components/LoginScreens';
 import { CustomerDashboardRenderer } from './components/CustomerDashboardRenderer';
 import { AdminLayout, SuperAdminLayout } from './layouts/AdminLayout';
 import { PublicLayout } from './layouts/PublicLayout';
@@ -13,178 +12,44 @@ import { resolveCustomerDashboard } from './platform/customerExperience';
 import { useAtlasStore } from './state/AtlasStore';
 
 const money = (value: number) => `₡${value.toLocaleString('es-CR')}`;
+type Role = 'client' | 'staff' | 'admin' | 'super';
+const accessKey = (role: Role, slug?: string) => `atlas-gate:${role}:${slug || 'global'}`;
+const hasAccess = (role: Role, slug?: string) => typeof window !== 'undefined' && window.localStorage.getItem(accessKey(role, slug)) === 'ok';
+const grantAccess = (role: Role, slug: string | undefined, to: string) => { window.localStorage.setItem(accessKey(role, slug), 'ok'); window.location.href = to; };
 
-function Mini({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {
-  return <article className="card feature-card">{icon}<h3>{title}</h3><p>{text}</p></article>;
-}
+function Mini({ icon, title, text }: { icon: ReactNode; title: string; text: string }) { return <article className="card feature-card">{icon}<h3>{title}</h3><p>{text}</p></article>; }
+function ListCard({ icon, title, items }: { icon: ReactNode; title: string; items: string[] }) { return <article className="card">{icon}<h3>{title}</h3>{items.length ? items.map((item) => <p key={item}>{item}</p>) : <p>Sin registros todavía.</p>}</article>; }
+function SectionTitle({ eyebrow, title, text }: { eyebrow: string; title: string; text: string }) { return <div className="workspace-header public-section-head"><span className="eyebrow">{eyebrow}</span><h2>{title}</h2><p>{text}</p></div>; }
 
-function ListCard({ icon, title, items }: { icon: ReactNode; title: string; items: string[] }) {
-  return <article className="card">{icon}<h3>{title}</h3>{items.length ? items.map((item) => <p key={item}>{item}</p>) : <p>Sin registros todavía.</p>}</article>;
-}
-
-function SectionTitle({ eyebrow, title, text }: { eyebrow: string; title: string; text: string }) {
-  return <div className="workspace-header public-section-head"><span className="eyebrow">{eyebrow}</span><h2>{title}</h2><p>{text}</p></div>;
+function RoleDoor({ role, slug, businessName, to }: { role: Role; slug?: string; businessName?: string; to: string }) {
+  const copy = {
+    client: ['Cuenta del cliente', 'Entrá a tu espacio privado', 'Citas, pagos, historial y próximos pasos quedan separados de la página pública.', 'Entrar como cliente demo'],
+    staff: ['Vista staff', 'Acceso operativo del equipo', 'Operación diaria sin configuración sensible del negocio.', 'Entrar como staff demo'],
+    admin: ['Panel del negocio', 'Administración privada', 'Agenda, clientes, pagos, servicios y configuración viven en una zona separada.', 'Entrar como admin demo'],
+    super: ['Digital Atlas', 'Control interno', 'Negocios, planes y funciones activas viven fuera de los locales de cada cliente.', 'Entrar como Digital Atlas demo'],
+  }[role];
+  return <div className="login-shell"><section className="login-card"><div className="login-logo"><Building2 size={24} /></div><span className="eyebrow">{copy[0]}</span><h1 className="login-title">{copy[1]}</h1><p className="login-sub">{businessName ? `${businessName}. ${copy[2]}` : copy[2]}</p><div className="empty-state"><strong>Zona separada</strong><span>Esta puerta es de prototipo. Después se conecta a autenticación real y permisos por negocio.</span></div><div className="hero-actions"><button className="btn btn-primary" onClick={() => grantAccess(role, slug, to)}>{copy[3]}</button><Link className="btn btn-secondary" href={slug ? `/${slug}` : '/'}>Volver</Link></div></section></div>;
 }
 
 function Home() {
-  return (
-    <PublicLayout>
-      <section className="public-hero">
-        <div className="public-hero-copy">
-          <span className="eyebrow">Digital Atlas para negocios de servicios</span>
-          <h1>Agenda, pagos y clientes en un solo sistema</h1>
-          <p>Gestioná reservas, membresías, pagos SINPE, clientes y promociones desde una plataforma clara para negocios de servicios.</p>
-          <div className="hero-actions">
-            <Link className="btn btn-primary" href="/client/atlas-fight-academy">Ver portal cliente</Link>
-            <Link className="btn btn-secondary" href="/ink-beauty-studio">Ver negocio de ejemplo</Link>
-          </div>
-        </div>
-        <aside className="hero-panel">
-          <span className="badge badge-violet">Producto SaaS</span>
-          <h3>Una plataforma, varias experiencias</h3>
-          <p>Landing pública, cuenta del cliente, panel del negocio, vista staff y control interno.</p>
-        </aside>
-      </section>
-      <section id="features" className="feature-grid">
-        <Mini icon={<CalendarDays />} title="Negocios de citas" text="Servicios, agenda, profesionales y depósitos de reserva." />
-        <Mini icon={<Dumbbell />} title="Gimnasios y academias" text="Membresías, clases, pagos SINPE, eventos y productos." />
-        <Mini icon={<Users />} title="Portal cliente" text="Cada persona ve sus próximos pasos, pagos, beneficios e historial." />
-      </section>
-      <section id="examples" className="dashboard-grid" style={{ marginTop: 18 }}>
-        <article className="card wide-card"><span className="badge badge-amber">Ejemplo de citas</span><h3>Ink Beauty Studio</h3><p>Servicios, reserva por cita, depósito de reserva, profesionales y cuenta del cliente.</p><Link className="btn btn-secondary btn-sm" href="/ink-beauty-studio">Abrir ejemplo</Link></article>
-        <article className="card wide-card"><span className="badge badge-green">Ejemplo de academia</span><h3>Atlas Fight Academy</h3><p>Membresías, clases, pagos SINPE, productos, eventos y portal de alumno.</p><Link className="btn btn-secondary btn-sm" href="/atlas-fight-academy">Abrir ejemplo</Link></article>
-      </section>
-    </PublicLayout>
-  );
+  return <PublicLayout><section className="public-hero"><div className="public-hero-copy"><span className="eyebrow">Digital Atlas para negocios de servicios</span><h1>Agenda, pagos y clientes en un solo sistema</h1><p>Gestioná reservas, membresías, pagos SINPE, clientes y promociones desde una plataforma clara para negocios de servicios.</p><div className="hero-actions"><Link className="btn btn-primary" href="/ink-beauty-studio">Ver ejemplo público</Link><Link className="btn btn-secondary" href="/client/atlas-fight-academy/login">Ver portal cliente</Link></div></div><aside className="hero-panel"><span className="badge badge-violet">Producto SaaS</span><h3>Zonas separadas por rol</h3><p>Página pública, cuenta del cliente, vista staff, panel del negocio y control Digital Atlas no comparten el mismo pasillo.</p></aside></section><section id="features" className="feature-grid"><Mini icon={<CalendarDays />} title="Negocios de citas" text="Servicios, agenda, profesionales y depósitos de reserva." /><Mini icon={<Dumbbell />} title="Gimnasios y academias" text="Membresías, clases, pagos SINPE, eventos y productos." /><Mini icon={<Users />} title="Portal cliente" text="Cada persona ve sus próximos pasos, pagos, beneficios e historial." /></section><section id="examples" className="dashboard-grid" style={{ marginTop: 18 }}><article className="card wide-card"><span className="badge badge-amber">Ejemplo de citas</span><h3>Ink Beauty Studio</h3><p>Servicios, reserva por cita, depósito de reserva, profesionales y cuenta del cliente.</p><Link className="btn btn-secondary btn-sm" href="/ink-beauty-studio">Abrir ejemplo</Link></article><article className="card wide-card"><span className="badge badge-green">Ejemplo de academia</span><h3>Atlas Fight Academy</h3><p>Membresías, clases, pagos SINPE, productos, eventos y portal de alumno.</p><Link className="btn btn-secondary btn-sm" href="/atlas-fight-academy">Abrir ejemplo</Link></article></section></PublicLayout>;
 }
 
 function PublicTenant() {
-  const { slug } = useParams();
-  const store = useAtlasStore();
-  const tenant = store.getTenant(slug);
-  const isMembership = tenant.vertical === 'membership';
-  const services = store.services.filter((item) => item.tenantSlug === tenant.slug);
-  const products = store.products.filter((item) => item.tenantSlug === tenant.slug);
-  const events = store.events.filter((item) => item.tenantSlug === tenant.slug);
-  const memberships = store.memberships.filter((item) => item.tenantSlug === tenant.slug);
-
-  if (isMembership) {
-    return (
-      <PublicLayout slug={tenant.slug} businessName={tenant.name} businessType="membership">
-        <section className="public-tenant-hero">
-          <div>
-            <span className="eyebrow">Gym y academia</span>
-            <h1>{tenant.name}</h1>
-            <p>Entrenamiento, membresías y clases en un solo lugar. Consultá tus planes, pagos, clases y eventos desde tu cuenta de alumno.</p>
-            <p className="inline-muted"><MapPin size={16} /> {tenant.address}</p>
-            <div className="hero-actions"><a className="btn btn-primary" href="#plans">Ver planes</a><Link className="btn btn-secondary" href={`/client/${tenant.slug}`}>Entrar a mi cuenta</Link></div>
-          </div>
-          <aside className="tenant-status-card"><span className="badge badge-green">Portal de alumno</span><h3>Planes, pagos y clases</h3><strong>{memberships.length} alumnos activos</strong><p>Los alumnos pueden consultar su estado, revisar clases y subir comprobantes SINPE.</p></aside>
-        </section>
-
-        <SectionTitle eyebrow="Planes" title="Elegí cómo querés entrenar" text="Planes mensuales y opciones por disciplina para alumnos nuevos o activos." />
-        <section id="plans" className="feature-grid">
-          <ListCard icon={<Dumbbell />} title="MMA mensual" items={['₡35 000 al mes', 'Clases grupales', 'Acceso a eventos seleccionados']} />
-          <ListCard icon={<Dumbbell />} title="Boxeo mensual" items={['₡28 000 al mes', 'Técnica y acondicionamiento', 'Horarios mañana y noche']} />
-          <ListCard icon={<Dumbbell />} title="BJJ mensual" items={['₡32 000 al mes', 'Fundamentos y sparring', 'Seguimiento de progreso']} />
-        </section>
-
-        <SectionTitle eyebrow="Clases" title="Clases de la semana" text="Una vista simple para que el alumno entienda qué puede reservar o consultar." />
-        <section id="classes" className="feature-grid">
-          <ListCard icon={<CalendarDays />} title="Hoy" items={['MMA · 6:00 PM', 'BJJ · 7:30 PM']} />
-          <ListCard icon={<CalendarDays />} title="Mañana" items={['Boxeo · 8:00 AM', 'MMA · 6:00 PM']} />
-          <ListCard icon={<Wallet />} title="Pago SINPE" items={['Pagá la mensualidad', 'Subí comprobante desde tu cuenta', 'El equipo valida el pago']} />
-        </section>
-
-        <SectionTitle eyebrow="Comunidad" title="Eventos y productos" text="Actividades y productos adicionales para alumnos y visitantes." />
-        <section id="events" className="feature-grid">
-          <ListCard icon={<Ticket />} title="Eventos" items={events.map((e) => `${e.title} · ${e.date}`)} />
-          <ListCard icon={<Package />} title="Productos destacados" items={products.map((p) => `${p.name} · ${money(p.price)}`)} />
-          <Mini icon={<Sparkles />} title="Beneficios" text="Promos, referidos y beneficios para alumnos activos." />
-        </section>
-
-        <section className="public-final-cta card"><span className="eyebrow">Cuenta de alumno</span><h2>Revisá tu plan, pagos y próximas clases</h2><p>El portal del alumno mantiene todo ordenado en un solo lugar.</p><Link className="btn btn-primary" href={`/client/${tenant.slug}`}>Entrar a mi cuenta</Link></section>
-      </PublicLayout>
-    );
-  }
-
-  return (
-    <PublicLayout slug={tenant.slug} businessName={tenant.name} businessType="appointments">
-      <section className="public-tenant-hero">
-        <div>
-          <span className="eyebrow">Belleza y servicios por cita</span>
-          <h1>{tenant.name}</h1>
-          <p>Reservá tu espacio, revisá el depósito y seguí tus citas desde tu cuenta.</p>
-          <p className="inline-muted"><MapPin size={16} /> {tenant.address}</p>
-          <div className="hero-actions"><a className="btn btn-primary" href="#services">Reservar cita</a><Link className="btn btn-secondary" href={`/client/${tenant.slug}`}>Entrar a mi cuenta</Link></div>
-        </div>
-        <aside className="tenant-status-card"><span className="badge badge-green">Reserva por cita</span><h3>Próximo espacio</h3><strong>Hoy · 4:00 PM</strong><p>El negocio confirma el espacio y el depósito de reserva.</p></aside>
-      </section>
-
-      <SectionTitle eyebrow="Servicios" title="Servicios destacados" text="Reservá según el servicio, duración aproximada y depósito requerido." />
-      <section id="services" className="catalog-grid">{services.map((service) => <article className="card service-card" key={service.id}><span className="badge badge-amber">{service.category}</span><h3>{service.name}</h3><p>{service.duration} min · depósito {money(service.deposit)}</p><strong>Desde {money(service.price)}</strong><Link className="btn btn-primary btn-sm" href={`/booking/${service.id}`}>Reservar</Link></article>)}</section>
-
-      <SectionTitle eyebrow="Proceso" title="Cómo funciona la reserva" text="Un flujo claro para evitar mensajes perdidos y citas sin confirmar." />
-      <section className="feature-grid">
-        <Mini icon={<CalendarDays />} title="1. Elegí servicio" text="Seleccioná servicio, horario y datos del cliente." />
-        <Mini icon={<Wallet />} title="2. Confirmá depósito" text="El negocio valida el depósito de reserva cuando aplique." />
-        <Mini icon={<Sparkles />} title="3. Seguimiento" text="Revisá tu cita, preparación e historial desde tu cuenta." />
-      </section>
-
-      <SectionTitle eyebrow="Equipo y ubicación" title="Profesionales, contacto y llegada" text="Información útil para que el cliente llegue preparado y sepa qué hacer." />
-      <section id="professionals" className="feature-grid">
-        <Mini icon={<UserCheck />} title="Profesionales" text="Elegí especialista según disponibilidad y servicio." />
-        <Mini icon={<Wallet />} title="Depósito de reserva" text="Algunos servicios requieren depósito para confirmar el espacio." />
-        <Mini icon={<MapPin />} title="WhatsApp" text={`Coordiná detalles al ${tenant.whatsapp}.`} />
-      </section>
-      <section id="location" className="dashboard-grid" style={{ marginTop: 18 }}>
-        <article className="card wide-card"><MapPin /><h3>Ubicación</h3><p>{tenant.address}</p><p>Confirmá referencias y disponibilidad antes de asistir.</p></article>
-        <article className="card"><Sparkles /><h3>Cuenta del cliente</h3><p>Revisá citas, depósito, preparación e historial.</p><Link className="btn btn-secondary btn-sm" href={`/client/${tenant.slug}`}>Entrar a mi cuenta</Link></article>
-      </section>
-
-      <section className="public-final-cta card"><span className="eyebrow">Reserva online</span><h2>Agendá tu próxima cita sin perder el seguimiento</h2><p>Todo queda conectado a tu cuenta para revisar estado, preparación e historial.</p><a className="btn btn-primary" href="#services">Reservar cita</a></section>
-    </PublicLayout>
-  );
+  const { slug } = useParams(); const store = useAtlasStore(); const tenant = store.getTenant(slug); const isMembership = tenant.vertical === 'membership'; const services = store.services.filter((item) => item.tenantSlug === tenant.slug); const products = store.products.filter((item) => item.tenantSlug === tenant.slug); const events = store.events.filter((item) => item.tenantSlug === tenant.slug); const memberships = store.memberships.filter((item) => item.tenantSlug === tenant.slug);
+  if (isMembership) return <PublicLayout slug={tenant.slug} businessName={tenant.name} businessType="membership"><section className="public-tenant-hero"><div><span className="eyebrow">Gym y academia</span><h1>{tenant.name}</h1><p>Entrenamiento, membresías y clases en un solo lugar. Consultá tus planes, pagos, clases y eventos desde tu cuenta de alumno.</p><p className="inline-muted"><MapPin size={16} /> {tenant.address}</p><div className="hero-actions"><a className="btn btn-primary" href="#plans">Ver planes</a><Link className="btn btn-secondary" href={`/client/${tenant.slug}/login`}>Entrar a mi cuenta</Link></div></div><aside className="tenant-status-card"><span className="badge badge-green">Portal de alumno</span><h3>Planes, pagos y clases</h3><strong>{memberships.length} alumnos activos</strong><p>Los alumnos pueden consultar su estado, revisar clases y subir comprobantes SINPE.</p></aside></section><SectionTitle eyebrow="Planes" title="Elegí cómo querés entrenar" text="Planes mensuales y opciones por disciplina para alumnos nuevos o activos." /><section id="plans" className="feature-grid"><ListCard icon={<Dumbbell />} title="MMA mensual" items={['₡35 000 al mes', 'Clases grupales', 'Acceso a eventos seleccionados']} /><ListCard icon={<Dumbbell />} title="Boxeo mensual" items={['₡28 000 al mes', 'Técnica y acondicionamiento', 'Horarios mañana y noche']} /><ListCard icon={<Dumbbell />} title="BJJ mensual" items={['₡32 000 al mes', 'Fundamentos y sparring', 'Seguimiento de progreso']} /></section><SectionTitle eyebrow="Clases" title="Clases de la semana" text="Una vista simple para que el alumno entienda qué puede reservar o consultar." /><section id="classes" className="feature-grid"><ListCard icon={<CalendarDays />} title="Hoy" items={['MMA · 6:00 PM', 'BJJ · 7:30 PM']} /><ListCard icon={<CalendarDays />} title="Mañana" items={['Boxeo · 8:00 AM', 'MMA · 6:00 PM']} /><ListCard icon={<Wallet />} title="Pago SINPE" items={['Pagá la mensualidad', 'Subí comprobante desde tu cuenta', 'El equipo valida el pago']} /></section><SectionTitle eyebrow="Comunidad" title="Eventos y productos" text="Actividades y productos adicionales para alumnos y visitantes." /><section id="events" className="feature-grid"><ListCard icon={<Ticket />} title="Eventos" items={events.map((e) => `${e.title} · ${e.date}`)} /><ListCard icon={<Package />} title="Productos destacados" items={products.map((p) => `${p.name} · ${money(p.price)}`)} /><Mini icon={<Sparkles />} title="Beneficios" text="Promos, referidos y beneficios para alumnos activos." /></section><section className="public-final-cta card"><span className="eyebrow">Cuenta de alumno</span><h2>Revisá tu plan, pagos y próximas clases</h2><p>El portal del alumno mantiene todo ordenado en un solo lugar.</p><Link className="btn btn-primary" href={`/client/${tenant.slug}/login`}>Entrar a mi cuenta</Link></section></PublicLayout>;
+  return <PublicLayout slug={tenant.slug} businessName={tenant.name} businessType="appointments"><section className="public-tenant-hero"><div><span className="eyebrow">Belleza y servicios por cita</span><h1>{tenant.name}</h1><p>Reservá tu espacio, revisá el depósito y seguí tus citas desde tu cuenta.</p><p className="inline-muted"><MapPin size={16} /> {tenant.address}</p><div className="hero-actions"><a className="btn btn-primary" href="#services">Reservar cita</a><Link className="btn btn-secondary" href={`/client/${tenant.slug}/login`}>Entrar a mi cuenta</Link></div></div><aside className="tenant-status-card"><span className="badge badge-green">Reserva por cita</span><h3>Próximo espacio</h3><strong>Hoy · 4:00 PM</strong><p>El negocio confirma el espacio y el depósito de reserva.</p></aside></section><SectionTitle eyebrow="Servicios" title="Servicios destacados" text="Reservá según el servicio, duración aproximada y depósito requerido." /><section id="services" className="catalog-grid">{services.map((service) => <article className="card service-card" key={service.id}><span className="badge badge-amber">{service.category}</span><h3>{service.name}</h3><p>{service.duration} min · depósito {money(service.deposit)}</p><strong>Desde {money(service.price)}</strong><Link className="btn btn-primary btn-sm" href={`/booking/${service.id}`}>Reservar</Link></article>)}</section><SectionTitle eyebrow="Proceso" title="Cómo funciona la reserva" text="Un flujo claro para evitar mensajes perdidos y citas sin confirmar." /><section className="feature-grid"><Mini icon={<CalendarDays />} title="1. Elegí servicio" text="Seleccioná servicio, horario y datos del cliente." /><Mini icon={<Wallet />} title="2. Confirmá depósito" text="El negocio valida el depósito de reserva cuando aplique." /><Mini icon={<Sparkles />} title="3. Seguimiento" text="Revisá tu cita, preparación e historial desde tu cuenta." /></section><SectionTitle eyebrow="Equipo y ubicación" title="Profesionales, contacto y llegada" text="Información útil para que el cliente llegue preparado y sepa qué hacer." /><section id="professionals" className="feature-grid"><Mini icon={<UserCheck />} title="Profesionales" text="Elegí especialista según disponibilidad y servicio." /><Mini icon={<Wallet />} title="Depósito de reserva" text="Algunos servicios requieren depósito para confirmar el espacio." /><Mini icon={<MapPin />} title="WhatsApp" text={`Coordiná detalles al ${tenant.whatsapp}.`} /></section><section id="location" className="dashboard-grid" style={{ marginTop: 18 }}><article className="card wide-card"><MapPin /><h3>Ubicación</h3><p>{tenant.address}</p><p>Confirmá referencias y disponibilidad antes de asistir.</p></article><article className="card"><Sparkles /><h3>Cuenta del cliente</h3><p>Revisá citas, depósito, preparación e historial.</p><Link className="btn btn-secondary btn-sm" href={`/client/${tenant.slug}/login`}>Entrar a mi cuenta</Link></article></section><section className="public-final-cta card"><span className="eyebrow">Reserva online</span><h2>Agendá tu próxima cita sin perder el seguimiento</h2><p>Todo queda conectado a tu cuenta para revisar estado, preparación e historial.</p><a className="btn btn-primary" href="#services">Reservar cita</a></section></PublicLayout>;
 }
 
-function InfoPage() {
-  const { slug } = useParams();
-  const { getTenant } = useAtlasStore();
-  const tenant = getTenant(slug);
-  const isMembership = tenant.vertical === 'membership';
-  return <PublicLayout slug={tenant.slug} businessName={tenant.name} businessType={isMembership ? 'membership' : 'appointments'}><section className="public-tenant-hero"><div><span className="eyebrow">Sobre {tenant.name}</span><h1>{isMembership ? 'Entrenamiento, comunidad y progreso' : 'Servicios por cita con seguimiento claro'}</h1><p>{isMembership ? 'Planes, clases, eventos y pagos organizados desde la cuenta de alumno.' : 'Servicios, reserva, depósito y seguimiento desde la cuenta del cliente.'}</p><Link className="btn btn-secondary" href={`/${tenant.slug}`}>Volver</Link></div><div className="hero-panel"><Image /><span>{isMembership ? 'Planes, clases y eventos' : 'Servicios, profesionales y ubicación'}</span></div></section></PublicLayout>;
-}
-
-function ClientPortal() {
-  const { slug } = useParams();
-  const { getTenant } = useAtlasStore();
-  const tenant = getTenant(slug && slug !== 'demo' ? slug : 'atlas-fight-academy');
-  const spec = resolveCustomerDashboard(tenant.vertical);
-  const [section, setSection] = useState(spec.nav[0]?.id || 'inicio');
-  return <CustomerDashboardRenderer tenant={tenant} activeSection={section} onSectionChange={setSection} />;
-}
-
-function AdminPage() {
-  const { slug } = useParams();
-  const store = useAtlasStore();
-  const tenant = store.getTenant(slug);
-  const [activeTab, setActiveTab] = useState(tenant.vertical === 'membership' ? 'Membresías' : 'Agenda');
-  const isMembership = tenant.vertical === 'membership';
-  const count = isMembership ? store.memberships.filter((item) => item.tenantSlug === tenant.slug).length : store.appointments.filter((item) => item.tenantSlug === tenant.slug).length;
-  return <AdminLayout tenant={tenant} activeTab={activeTab} onTabChange={setActiveTab}><div className="kpi-grid"><Kpi icon={isMembership ? <Dumbbell /> : <CalendarDays />} label={isMembership ? 'Membresías' : 'Citas'} value={String(count)} /><Kpi icon={<Wallet />} label="Pagos pendientes" value="1" /><Kpi icon={<Users />} label={isMembership ? 'Alumnos' : 'Clientes'} value={String(count)} /><Kpi icon={<Sparkles />} label="Promociones" value="4" /></div><AdminWorkspace tenant={tenant} activeTab={activeTab} /></AdminLayout>;
-}
-
-function StaffPage() { const { slug } = useParams(); const { getTenant } = useAtlasStore(); const tenant = getTenant(slug); return <StaffPortal tenantSlug={tenant.slug} />; }
-
-function SuperAdmin() {
-  const { tenants, addTenant, resetDemo, dataSource } = useAtlasStore();
-  const [name, setName] = useState(''); const [vertical, setVertical] = useState<'appointments' | 'membership'>('appointments'); const [plan, setPlan] = useState<'starter' | 'operations' | 'growth'>('operations');
-  const modules = vertical === 'membership' ? ['Landing', 'Portal', 'Membresías', 'Pagos SINPE', 'Productos', 'Eventos'] : ['Landing', 'Portal', 'Agenda', 'Servicios', 'Profesionales', 'Depósitos'];
-  return <SuperAdminLayout><section className="page-header"><div className="flex-between"><div><span className="eyebrow">Digital Atlas control center</span><h2>Superadmin</h2><p>Crea negocios, define tipo, plan y funciones activas.</p></div><span className="badge badge-violet">Data: {dataSource}</span></div></section><div className="dashboard-grid"><article className="card wide-card"><Building2 /><h3>Negocios activos</h3>{Object.values(tenants).map((tenant) => <div className="agenda-row" key={tenant.slug}><span>{tenant.vertical === 'membership' ? 'Membresía' : 'Citas'}</span><strong>{tenant.name}</strong><Link href={`/admin/${tenant.slug}`}>Abrir admin</Link></div>)}</article><article className="card"><PlusCircle /><h3>Crear negocio</h3><div className="stack-form"><input className="input" placeholder="Nombre" value={name} onChange={(event) => setName(event.target.value)} /><select className="input" value={vertical} onChange={(event) => setVertical(event.target.value as 'appointments' | 'membership')}><option value="appointments">Negocio de citas</option><option value="membership">Gimnasio o academia</option></select><select className="input" value={plan} onChange={(event) => setPlan(event.target.value as 'starter' | 'operations' | 'growth')}><option value="starter">Starter</option><option value="operations">Operations</option><option value="growth">Growth</option></select><div className="module-row">{modules.map((module) => <span key={module}>{module}</span>)}</div><button className="btn btn-primary btn-full" onClick={() => { if (!name) return toast.error('Escribí un nombre'); const createdSlug = addTenant({ name, vertical, plan, description: 'Negocio creado desde Digital Atlas.' }); setName(''); toast.success(`Negocio creado: ${createdSlug}`); }}>Crear</button><button className="btn btn-secondary btn-full" onClick={resetDemo}>Restablecer ejemplo</button></div></article><ListCard icon={<BarChart3 />} title="Métricas SaaS" items={[`Negocios: ${Object.keys(tenants).length}`, 'Roles separados activos', 'Supabase conectado con respaldo local']} /><ListCard icon={<UserCheck />} title="Próximo salto" items={['Autenticación por negocio', 'Permisos avanzados', 'Escritura real completa']} /></div></SuperAdminLayout>;
-}
-
+function InfoPage() { const { slug } = useParams(); const { getTenant } = useAtlasStore(); const tenant = getTenant(slug); const isMembership = tenant.vertical === 'membership'; return <PublicLayout slug={tenant.slug} businessName={tenant.name} businessType={isMembership ? 'membership' : 'appointments'}><section className="public-tenant-hero"><div><span className="eyebrow">Sobre {tenant.name}</span><h1>{isMembership ? 'Entrenamiento, comunidad y progreso' : 'Servicios por cita con seguimiento claro'}</h1><p>{isMembership ? 'Planes, clases, eventos y pagos organizados desde la cuenta de alumno.' : 'Servicios, reserva, depósito y seguimiento desde la cuenta del cliente.'}</p><Link className="btn btn-secondary" href={`/${tenant.slug}`}>Volver</Link></div><div className="hero-panel"><Image /><span>{isMembership ? 'Planes, clases y eventos' : 'Servicios, profesionales y ubicación'}</span></div></section></PublicLayout>; }
+function ClientLoginDoor() { const { slug } = useParams(); const { getTenant } = useAtlasStore(); const tenant = getTenant(slug); return <RoleDoor role="client" slug={tenant.slug} businessName={tenant.name} to={`/client/${tenant.slug}`} />; }
+function AdminLoginDoor() { const { slug } = useParams(); const { getTenant } = useAtlasStore(); const tenant = getTenant(slug); return <RoleDoor role="admin" slug={tenant.slug} businessName={tenant.name} to={`/admin/${tenant.slug}`} />; }
+function StaffLoginDoor() { const { slug } = useParams(); const { getTenant } = useAtlasStore(); const tenant = getTenant(slug); return <RoleDoor role="staff" slug={tenant.slug} businessName={tenant.name} to={`/staff/${tenant.slug}`} />; }
+function SuperLoginDoor() { return <RoleDoor role="super" to="/super-admin" />; }
+function ClientPortal() { const { slug } = useParams(); const { getTenant } = useAtlasStore(); const tenant = getTenant(slug && slug !== 'demo' ? slug : 'atlas-fight-academy'); if (!hasAccess('client', tenant.slug)) return <RoleDoor role="client" slug={tenant.slug} businessName={tenant.name} to={`/client/${tenant.slug}`} />; const spec = resolveCustomerDashboard(tenant.vertical); const [section, setSection] = useState(spec.nav[0]?.id || 'inicio'); return <CustomerDashboardRenderer tenant={tenant} activeSection={section} onSectionChange={setSection} />; }
+function AdminPage() { const { slug } = useParams(); const store = useAtlasStore(); const tenant = store.getTenant(slug); if (!hasAccess('admin', tenant.slug)) return <RoleDoor role="admin" slug={tenant.slug} businessName={tenant.name} to={`/admin/${tenant.slug}`} />; const [activeTab, setActiveTab] = useState(tenant.vertical === 'membership' ? 'Membresías' : 'Agenda'); const isMembership = tenant.vertical === 'membership'; const count = isMembership ? store.memberships.filter((item) => item.tenantSlug === tenant.slug).length : store.appointments.filter((item) => item.tenantSlug === tenant.slug).length; return <AdminLayout tenant={tenant} activeTab={activeTab} onTabChange={setActiveTab}><div className="kpi-grid"><Kpi icon={isMembership ? <Dumbbell /> : <CalendarDays />} label={isMembership ? 'Membresías' : 'Citas'} value={String(count)} /><Kpi icon={<Wallet />} label="Pagos pendientes" value="1" /><Kpi icon={<Users />} label={isMembership ? 'Alumnos' : 'Clientes'} value={String(count)} /><Kpi icon={<Sparkles />} label="Promociones" value="4" /></div><AdminWorkspace tenant={tenant} activeTab={activeTab} /></AdminLayout>; }
+function StaffPage() { const { slug } = useParams(); const { getTenant } = useAtlasStore(); const tenant = getTenant(slug); if (!hasAccess('staff', tenant.slug)) return <RoleDoor role="staff" slug={tenant.slug} businessName={tenant.name} to={`/staff/${tenant.slug}`} />; return <StaffPortal tenantSlug={tenant.slug} />; }
+function SuperAdmin() { if (!hasAccess('super')) return <RoleDoor role="super" to="/super-admin" />; const { tenants, addTenant, resetDemo, dataSource } = useAtlasStore(); const [name, setName] = useState(''); const [vertical, setVertical] = useState<'appointments' | 'membership'>('appointments'); const [plan, setPlan] = useState<'starter' | 'operations' | 'growth'>('operations'); const modules = vertical === 'membership' ? ['Landing', 'Portal', 'Membresías', 'Pagos SINPE', 'Productos', 'Eventos'] : ['Landing', 'Portal', 'Agenda', 'Servicios', 'Profesionales', 'Depósitos']; return <SuperAdminLayout><section className="page-header"><div className="flex-between"><div><span className="eyebrow">Digital Atlas control center</span><h2>Superadmin</h2><p>Crea negocios, define tipo, plan y funciones activas.</p></div><span className="badge badge-violet">Data: {dataSource}</span></div></section><div className="dashboard-grid"><article className="card wide-card"><Building2 /><h3>Negocios activos</h3>{Object.values(tenants).map((tenant) => <div className="agenda-row" key={tenant.slug}><span>{tenant.vertical === 'membership' ? 'Membresía' : 'Citas'}</span><strong>{tenant.name}</strong><Link href={`/admin/${tenant.slug}/login`}>Abrir admin</Link></div>)}</article><article className="card"><PlusCircle /><h3>Crear negocio</h3><div className="stack-form"><input className="input" placeholder="Nombre" value={name} onChange={(event) => setName(event.target.value)} /><select className="input" value={vertical} onChange={(event) => setVertical(event.target.value as 'appointments' | 'membership')}><option value="appointments">Negocio de citas</option><option value="membership">Gimnasio o academia</option></select><select className="input" value={plan} onChange={(event) => setPlan(event.target.value as 'starter' | 'operations' | 'growth')}><option value="starter">Starter</option><option value="operations">Operations</option><option value="growth">Growth</option></select><div className="module-row">{modules.map((module) => <span key={module}>{module}</span>)}</div><button className="btn btn-primary btn-full" onClick={() => { if (!name) return toast.error('Escribí un nombre'); const createdSlug = addTenant({ name, vertical, plan, description: 'Negocio creado desde Digital Atlas.' }); setName(''); toast.success(`Negocio creado: ${createdSlug}`); }}>Crear</button><button className="btn btn-secondary btn-full" onClick={resetDemo}>Restablecer ejemplo</button></div></article><ListCard icon={<BarChart3 />} title="Métricas SaaS" items={[`Negocios: ${Object.keys(tenants).length}`, 'Roles separados activos', 'Supabase conectado con respaldo local']} /><ListCard icon={<UserCheck />} title="Próximo salto" items={['Autenticación por negocio', 'Permisos avanzados', 'Escritura real completa']} /></div></SuperAdminLayout>; }
 function Kpi({ icon, label, value }: { icon: ReactNode; label: string; value: string }) { return <article className="kpi-card">{icon}<span>{label}</span><strong>{value}</strong></article>; }
 
-export default function AtlasApp() {
-  return <Switch><Route path="/" component={Home} /><Route path="/client/login" component={ClientLogin} /><Route path="/client/demo" component={ClientPortal} /><Route path="/client/:slug" component={ClientPortal} /><Route path="/:slug/info" component={InfoPage} /><Route path="/booking/:id" component={() => <PublicLayout><BookingExperience /></PublicLayout>} /><Route path="/admin/:slug/login" component={AdminLogin} /><Route path="/admin/:slug" component={AdminPage} /><Route path="/staff/:slug" component={StaffPage} /><Route path="/super-admin/login" component={SuperAdminLogin} /><Route path="/super-admin" component={SuperAdmin} /><Route path="/:slug" component={PublicTenant} /></Switch>;
-}
+export default function AtlasApp() { return <Switch><Route path="/" component={Home} /><Route path="/client/:slug/login" component={ClientLoginDoor} /><Route path="/client/login" component={() => <RoleDoor role="client" slug="atlas-fight-academy" businessName="Atlas Fight Academy" to="/client/atlas-fight-academy" />} /><Route path="/client/demo" component={ClientPortal} /><Route path="/client/:slug" component={ClientPortal} /><Route path="/:slug/info" component={InfoPage} /><Route path="/booking/:id" component={() => <PublicLayout><BookingExperience /></PublicLayout>} /><Route path="/admin/:slug/login" component={AdminLoginDoor} /><Route path="/admin/:slug" component={AdminPage} /><Route path="/staff/:slug/login" component={StaffLoginDoor} /><Route path="/staff/:slug" component={StaffPage} /><Route path="/super-admin/login" component={SuperLoginDoor} /><Route path="/super-admin" component={SuperAdmin} /><Route path="/:slug" component={PublicTenant} /></Switch>; }

@@ -30,7 +30,7 @@ export function resolveCustomerDashboard(rawVertical?: string): CustomerDashboar
     return {
       vertical,
       title: 'Mi membresía',
-      subtitle: 'Plan, pagos, clases, acceso y actividad dentro del negocio.',
+      subtitle: 'Planes, pagos SINPE, clases, acceso y beneficios de alumno.',
       primaryFocus: 'memberships',
       nav: [
         { id: 'inicio', label: 'Inicio', iconKey: 'home' },
@@ -50,19 +50,19 @@ export function resolveCustomerDashboard(rawVertical?: string): CustomerDashboar
   return {
     vertical,
     title: 'Mis citas',
-    subtitle: 'Próxima cita, depósito, profesional, preparación e historial.',
+    subtitle: 'Próxima cita, depósito de reserva, preparación e historial de servicios.',
     primaryFocus: 'appointments',
     nav: [
       { id: 'inicio', label: 'Inicio', iconKey: 'home' },
       { id: 'reservar', label: 'Reservar', iconKey: 'calendar' },
-      { id: 'pagos', label: 'Pagos', iconKey: 'receipt' },
+      { id: 'citas', label: 'Mis citas', iconKey: 'calendar' },
       { id: 'perfil', label: 'Perfil', iconKey: 'user' },
     ],
     sections: {
       inicio: ['upcoming_appointment', 'payment_task', 'aftercare', 'rewards_balance'],
-      reservar: ['upcoming_appointment', 'appointment_history'],
-      pagos: ['payment_task', 'appointment_history'],
-      perfil: ['rewards_balance', 'promotions'],
+      reservar: ['upcoming_appointment', 'aftercare'],
+      citas: ['upcoming_appointment', 'appointment_history'],
+      perfil: ['appointment_history', 'rewards_balance', 'promotions'],
     },
   };
 }

@@ -26,7 +26,7 @@ export function PublicLayout({ children, slug, businessName, businessType }: Pub
                 <a href="#plans" className="public-topbar-link">Planes</a>
                 <a href="#classes" className="public-topbar-link">Clases</a>
                 <a href="#events" className="public-topbar-link">Eventos</a>
-                <Link href={`/client/${slug}/login`} className="public-topbar-link btn btn-sm btn-secondary">Mi cuenta</Link>
+                <Link href={`/app/${slug}/login`} className="public-topbar-link btn btn-sm btn-secondary">Mi cuenta</Link>
               </>
             ) : (
               <>
@@ -34,7 +34,7 @@ export function PublicLayout({ children, slug, businessName, businessType }: Pub
                 <a href="#services" className="public-topbar-link">Servicios</a>
                 <a href="#professionals" className="public-topbar-link">Profesionales</a>
                 <a href="#location" className="public-topbar-link">Ubicación</a>
-                <Link href={`/client/${slug}/login`} className="public-topbar-link btn btn-sm btn-secondary">Mi cuenta</Link>
+                <Link href={`/app/${slug}/login`} className="public-topbar-link btn btn-sm btn-secondary">Mi cuenta</Link>
               </>
             )
           ) : (

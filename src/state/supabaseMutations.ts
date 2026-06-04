@@ -19,6 +19,24 @@ type ServiceInput = {
   deposit: number;
 };
 
+type BusinessInput = {
+  slug: string;
+  name: string;
+  vertical: 'appointments' | 'membership';
+  description: string;
+  plan?: 'starter' | 'operations' | 'growth';
+};
+
+type BusinessPatch = {
+  name?: string;
+  description?: string;
+  whatsapp?: string;
+  address?: string;
+  plan?: 'starter' | 'operations' | 'growth';
+  heroTitle?: string;
+  ctaLabel?: string;
+};
+
 async function getBusinessId(slug: string) {
   if (!isSupabaseConfigured || !supabase) return null;
   const { data, error } = await supabase.from('businesses').select('id').eq('slug', slug).maybeSingle();
@@ -40,6 +58,47 @@ async function getOrCreateClient(input: { name: string; phone?: string }) {
 
   if (error || !data?.id) return null;
   return data.id as string;
+}
+
+export async function createBusinessRemote(input: BusinessInput) {
+  if (!isSupabaseConfigured || !supabase) return null;
+  const { data, error } = await supabase
+    .from('businesses')
+    .insert({
+      slug: input.slug,
+      name: input.name,
+      vertical: input.vertical,
+      plan_tier: input.plan || 'starter',
+      description: input.description,
+      is_active: true,
+    })
+    .select('id')
+    .maybeSingle();
+
+  if (error) {
+    console.warn('[Atlas Supabase] createBusiness failed', error.message);
+    return null;
+  }
+  return data?.id as string | undefined;
+}
+
+export async function updateBusinessRemote(slug: string, patch: BusinessPatch) {
+  if (!isSupabaseConfigured || !supabase) return false;
+  const payload: Record<string, string | undefined> = {
+    name: patch.name,
+    description: patch.description,
+    whatsapp: patch.whatsapp,
+    address: patch.address,
+    plan_tier: patch.plan,
+    updated_at: new Date().toISOString(),
+  };
+  Object.keys(payload).forEach((key) => payload[key] === undefined && delete payload[key]);
+  const { error } = await supabase.from('businesses').update(payload).eq('slug', slug);
+  if (error) {
+    console.warn('[Atlas Supabase] updateBusiness failed', error.message);
+    return false;
+  }
+  return true;
 }
 
 export async function createAppointmentRemote(input: AppointmentInput) {

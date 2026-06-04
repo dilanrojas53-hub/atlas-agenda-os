@@ -104,8 +104,12 @@ p { color: var(--text-2); line-height: 1.6; margin: 0; }
 .admin-topbar h1 { font-size: clamp(28px, 4vw, 48px); }
 .admin-top-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-.page-header { margin-bottom: 18px; }
-.page-header h2 { font-size: clamp(28px, 4vw, 48px); margin: 6px 0; }
+.page-header, .workspace-header { margin-bottom: 18px; }
+.page-header h2, .workspace-header h2 { font-size: clamp(28px, 4vw, 48px); margin: 6px 0; }
+.workspace-header { border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+.empty-state { border: 1px dashed var(--border-strong); border-radius: 18px; padding: 18px; color: var(--text-2); display: grid; gap: 5px; background: rgba(255,255,255,.03); }
+.empty-state strong { color: var(--text); }
+.empty-state span { color: var(--text-3); }
 .flex-between { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .flex { display: flex; align-items: center; }
 .gap-8 { gap: 8px; }
@@ -137,16 +141,16 @@ textarea.input, .field textarea { min-height: 105px; resize: vertical; }
 select.input option, .stack-form select option { background: var(--surface); color: var(--text); }
 
 .client-shell { min-height: 100vh; background: radial-gradient(circle at top right, rgba(16,185,129,.16), transparent 28rem), var(--bg); padding-bottom: 84px; }
-.client-topbar { height: 72px; width: min(1120px, calc(100% - 32px)); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.client-topbar { height: 72px; width: min(1120px, calc(100% - 32px)); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--border); }
 .client-user { display: flex; align-items: center; gap: 10px; }
-.avatar { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: var(--emerald-dim); color: #86efac; font-weight: 900; }
-.client-main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 34px 0; }
-.client-hero { display: flex; justify-content: space-between; gap: 18px; align-items: center; margin-bottom: 20px; }
-.client-hero h1 { font-size: clamp(34px, 5vw, 62px); }
-.client-score { background: var(--emerald-dim); border: 1px solid rgba(16,185,129,.25); border-radius: 22px; padding: 18px 22px; text-align: center; }
-.client-score span { display: block; font-size: 34px; font-weight: 900; color: #86efac; }
-.client-score small { color: var(--text-2); font-weight: 800; }
-.client-bottom-nav { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; gap: 8px; background: rgba(17,17,22,.92); border: 1px solid var(--border); border-radius: 999px; padding: 8px; backdrop-filter: blur(18px); z-index: 20; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--gradient-brand); color: #fff; font-weight: 900; }
+.client-main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 34px 0 40px; }
+.client-hero { display: flex; justify-content: space-between; gap: 22px; align-items: flex-end; margin-bottom: 22px; }
+.client-hero h1 { font-size: clamp(38px, 7vw, 76px); line-height: .9; margin: 8px 0 10px; }
+.client-score { width: 130px; height: 130px; border-radius: 32px; border: 1px solid rgba(16,185,129,.25); background: var(--emerald-dim); display: grid; place-items: center; text-align: center; }
+.client-score span { font-size: 34px; font-weight: 900; }
+.client-score small { display: block; color: #86efac; font-weight: 900; text-transform: uppercase; font-size: 10px; letter-spacing: .13em; }
+.client-bottom-nav { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); width: min(520px, calc(100% - 32px)); background: rgba(17,17,22,.92); border: 1px solid var(--border); backdrop-filter: blur(16px); border-radius: 999px; padding: 8px; display: flex; justify-content: space-between; gap: 6px; box-shadow: var(--shadow); }
 .client-bottom-nav button { border: 0; border-radius: 999px; background: transparent; color: var(--text-2); padding: 10px 12px; display: inline-flex; align-items: center; gap: 7px; font-weight: 900; }
 .client-bottom-nav button.active { background: var(--emerald-dim); color: #86efac; }
 

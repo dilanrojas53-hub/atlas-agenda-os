@@ -5,6 +5,7 @@ import App from './AtlasApp';
 import { AtlasStoreProvider } from './state/AtlasStore';
 import './styles.css';
 import './adminTables.css';
+import './customerDashboard.css';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

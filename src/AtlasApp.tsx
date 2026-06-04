@@ -22,6 +22,10 @@ function ListCard({ icon, title, items }: { icon: ReactNode; title: string; item
   return <article className="card">{icon}<h3>{title}</h3>{items.length ? items.map((item) => <p key={item}>{item}</p>) : <p>Sin registros todavía.</p>}</article>;
 }
 
+function SectionTitle({ eyebrow, title, text }: { eyebrow: string; title: string; text: string }) {
+  return <div className="workspace-header public-section-head"><span className="eyebrow">{eyebrow}</span><h2>{title}</h2><p>{text}</p></div>;
+}
+
 function Home() {
   return (
     <PublicLayout>
@@ -45,6 +49,10 @@ function Home() {
         <Mini icon={<CalendarDays />} title="Negocios de citas" text="Servicios, agenda, profesionales y depósitos de reserva." />
         <Mini icon={<Dumbbell />} title="Gimnasios y academias" text="Membresías, clases, pagos SINPE, eventos y productos." />
         <Mini icon={<Users />} title="Portal cliente" text="Cada persona ve sus próximos pasos, pagos, beneficios e historial." />
+      </section>
+      <section id="examples" className="dashboard-grid" style={{ marginTop: 18 }}>
+        <article className="card wide-card"><span className="badge badge-amber">Ejemplo de citas</span><h3>Ink Beauty Studio</h3><p>Servicios, reserva por cita, depósito de reserva, profesionales y cuenta del cliente.</p><Link className="btn btn-secondary btn-sm" href="/ink-beauty-studio">Abrir ejemplo</Link></article>
+        <article className="card wide-card"><span className="badge badge-green">Ejemplo de academia</span><h3>Atlas Fight Academy</h3><p>Membresías, clases, pagos SINPE, productos, eventos y portal de alumno.</p><Link className="btn btn-secondary btn-sm" href="/atlas-fight-academy">Abrir ejemplo</Link></article>
       </section>
     </PublicLayout>
   );
@@ -71,14 +79,31 @@ function PublicTenant() {
             <p className="inline-muted"><MapPin size={16} /> {tenant.address}</p>
             <div className="hero-actions"><a className="btn btn-primary" href="#plans">Ver planes</a><Link className="btn btn-secondary" href={`/client/${tenant.slug}`}>Entrar a mi cuenta</Link></div>
           </div>
-          <aside className="tenant-status-card"><span className="badge badge-green">Portal de alumno</span><h3>Planes, pagos y clases</h3><strong>{memberships.length} alumnos activos</strong><p>Los alumnos pueden consultar su estado y revisar actividades.</p></aside>
+          <aside className="tenant-status-card"><span className="badge badge-green">Portal de alumno</span><h3>Planes, pagos y clases</h3><strong>{memberships.length} alumnos activos</strong><p>Los alumnos pueden consultar su estado, revisar clases y subir comprobantes SINPE.</p></aside>
         </section>
+
+        <SectionTitle eyebrow="Planes" title="Elegí cómo querés entrenar" text="Planes mensuales y opciones por disciplina para alumnos nuevos o activos." />
         <section id="plans" className="feature-grid">
-          <ListCard icon={<Dumbbell />} title="Planes disponibles" items={['MMA mensual · ₡35 000', 'Boxeo mensual · ₡28 000', 'BJJ mensual · ₡32 000']} />
-          <ListCard icon={<CalendarDays />} title="Clases de la semana" items={['MMA · 6:00 PM', 'BJJ · 7:30 PM', 'Boxeo · 8:00 AM']} />
-          <ListCard icon={<Wallet />} title="Cómo pagar por SINPE" items={['Realizá el pago mensual', 'Subí el comprobante desde tu cuenta', 'El equipo valida tu mensualidad']} />
+          <ListCard icon={<Dumbbell />} title="MMA mensual" items={['₡35 000 al mes', 'Clases grupales', 'Acceso a eventos seleccionados']} />
+          <ListCard icon={<Dumbbell />} title="Boxeo mensual" items={['₡28 000 al mes', 'Técnica y acondicionamiento', 'Horarios mañana y noche']} />
+          <ListCard icon={<Dumbbell />} title="BJJ mensual" items={['₡32 000 al mes', 'Fundamentos y sparring', 'Seguimiento de progreso']} />
         </section>
-        <section id="events" className="feature-grid"><ListCard icon={<Ticket />} title="Eventos" items={events.map((e) => `${e.title} · ${e.date}`)} /><ListCard icon={<Package />} title="Productos destacados" items={products.map((p) => `${p.name} · ${money(p.price)}`)} /></section>
+
+        <SectionTitle eyebrow="Clases" title="Clases de la semana" text="Una vista simple para que el alumno entienda qué puede reservar o consultar." />
+        <section id="classes" className="feature-grid">
+          <ListCard icon={<CalendarDays />} title="Hoy" items={['MMA · 6:00 PM', 'BJJ · 7:30 PM']} />
+          <ListCard icon={<CalendarDays />} title="Mañana" items={['Boxeo · 8:00 AM', 'MMA · 6:00 PM']} />
+          <ListCard icon={<Wallet />} title="Pago SINPE" items={['Pagá la mensualidad', 'Subí comprobante desde tu cuenta', 'El equipo valida el pago']} />
+        </section>
+
+        <SectionTitle eyebrow="Comunidad" title="Eventos y productos" text="Actividades y productos adicionales para alumnos y visitantes." />
+        <section id="events" className="feature-grid">
+          <ListCard icon={<Ticket />} title="Eventos" items={events.map((e) => `${e.title} · ${e.date}`)} />
+          <ListCard icon={<Package />} title="Productos destacados" items={products.map((p) => `${p.name} · ${money(p.price)}`)} />
+          <Mini icon={<Sparkles />} title="Beneficios" text="Promos, referidos y beneficios para alumnos activos." />
+        </section>
+
+        <section className="public-final-cta card"><span className="eyebrow">Cuenta de alumno</span><h2>Revisá tu plan, pagos y próximas clases</h2><p>El portal del alumno mantiene todo ordenado en un solo lugar.</p><Link className="btn btn-primary" href={`/client/${tenant.slug}`}>Entrar a mi cuenta</Link></section>
       </PublicLayout>
     );
   }
@@ -95,8 +120,29 @@ function PublicTenant() {
         </div>
         <aside className="tenant-status-card"><span className="badge badge-green">Reserva por cita</span><h3>Próximo espacio</h3><strong>Hoy · 4:00 PM</strong><p>El negocio confirma el espacio y el depósito de reserva.</p></aside>
       </section>
+
+      <SectionTitle eyebrow="Servicios" title="Servicios destacados" text="Reservá según el servicio, duración aproximada y depósito requerido." />
       <section id="services" className="catalog-grid">{services.map((service) => <article className="card service-card" key={service.id}><span className="badge badge-amber">{service.category}</span><h3>{service.name}</h3><p>{service.duration} min · depósito {money(service.deposit)}</p><strong>Desde {money(service.price)}</strong><Link className="btn btn-primary btn-sm" href={`/booking/${service.id}`}>Reservar</Link></article>)}</section>
-      <section id="professionals" className="feature-grid"><Mini icon={<UserCheck />} title="Profesionales" text="Elegí especialista según disponibilidad y servicio." /><Mini icon={<Wallet />} title="Depósito de reserva" text="Algunos servicios requieren depósito para confirmar el espacio." /><Mini icon={<MapPin />} title="Ubicación y WhatsApp" text="Confirmá dirección, referencias y detalles antes de asistir." /></section>
+
+      <SectionTitle eyebrow="Proceso" title="Cómo funciona la reserva" text="Un flujo claro para evitar mensajes perdidos y citas sin confirmar." />
+      <section className="feature-grid">
+        <Mini icon={<CalendarDays />} title="1. Elegí servicio" text="Seleccioná servicio, horario y datos del cliente." />
+        <Mini icon={<Wallet />} title="2. Confirmá depósito" text="El negocio valida el depósito de reserva cuando aplique." />
+        <Mini icon={<Sparkles />} title="3. Seguimiento" text="Revisá tu cita, preparación e historial desde tu cuenta." />
+      </section>
+
+      <SectionTitle eyebrow="Equipo y ubicación" title="Profesionales, contacto y llegada" text="Información útil para que el cliente llegue preparado y sepa qué hacer." />
+      <section id="professionals" className="feature-grid">
+        <Mini icon={<UserCheck />} title="Profesionales" text="Elegí especialista según disponibilidad y servicio." />
+        <Mini icon={<Wallet />} title="Depósito de reserva" text="Algunos servicios requieren depósito para confirmar el espacio." />
+        <Mini icon={<MapPin />} title="WhatsApp" text={`Coordiná detalles al ${tenant.whatsapp}.`} />
+      </section>
+      <section id="location" className="dashboard-grid" style={{ marginTop: 18 }}>
+        <article className="card wide-card"><MapPin /><h3>Ubicación</h3><p>{tenant.address}</p><p>Confirmá referencias y disponibilidad antes de asistir.</p></article>
+        <article className="card"><Sparkles /><h3>Cuenta del cliente</h3><p>Revisá citas, depósito, preparación e historial.</p><Link className="btn btn-secondary btn-sm" href={`/client/${tenant.slug}`}>Entrar a mi cuenta</Link></article>
+      </section>
+
+      <section className="public-final-cta card"><span className="eyebrow">Reserva online</span><h2>Agendá tu próxima cita sin perder el seguimiento</h2><p>Todo queda conectado a tu cuenta para revisar estado, preparación e historial.</p><a className="btn btn-primary" href="#services">Reservar cita</a></section>
     </PublicLayout>
   );
 }

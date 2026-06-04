@@ -28,21 +28,22 @@ function iconFor(key: string) {
 export function CustomerDashboardRenderer({ tenant, activeSection, onSectionChange }: CustomerDashboardRendererProps) {
   const spec = resolveCustomerDashboard(tenant.vertical);
   const widgets = spec.sections[activeSection] || spec.sections.inicio || [];
+  const isMembership = spec.vertical === 'membership';
 
   return (
     <div className="client-shell">
       <header className="client-topbar">
-        <span className="client-brand">{tenant.name}</span>
-        <div className="client-user"><span className="badge badge-green"><span className="dot dot-green" /> Cliente</span><div className="avatar">ML</div></div>
+        <span className="client-brand">Mi cuenta en {tenant.name}</span>
+        <div className="client-user"><span className="badge badge-green"><span className="dot dot-green" /> {isMembership ? 'Alumno' : 'Cliente'}</span><div className="avatar">ML</div></div>
       </header>
       <main className="client-main">
         <section className="client-hero">
           <div>
-            <span className="eyebrow">{spec.vertical === 'membership' ? 'Cuenta de miembro' : 'Cuenta de cliente'}</span>
+            <span className="eyebrow">{isMembership ? 'Portal de alumno' : 'Portal de cliente'}</span>
             <h1>{spec.title}</h1>
             <p>{spec.subtitle}</p>
           </div>
-          <div className="client-score"><span>240</span><small>puntos</small></div>
+          <div className="client-score"><span>240</span><small>{isMembership ? 'puntos' : 'beneficios'}</small></div>
         </section>
         <section className="dashboard-grid">
           {widgets.map((widget) => <CustomerWidget key={widget} widget={widget} tenant={tenant} />)}
@@ -61,6 +62,7 @@ export function CustomerDashboardRenderer({ tenant, activeSection, onSectionChan
 
 function CustomerWidget({ widget, tenant }: { widget: CustomerWidgetKey; tenant: TenantLike }) {
   const { memberships, appointments, uploadReceipt } = useAtlasStore();
+  const isMembership = tenant.vertical === 'membership';
   const tenantMemberships = memberships.filter((item) => item.tenantSlug === tenant.slug);
   const tenantAppointments = appointments.filter((item) => item.tenantSlug === tenant.slug);
   const pendingMembership = tenantMemberships.find((item) => item.status !== 'paid');
@@ -75,8 +77,12 @@ function CustomerWidget({ widget, tenant }: { widget: CustomerWidgetKey; tenant:
     return <article className="card"><CalendarDays /><h3>Mi próxima cita</h3><p>{nextAppointment ? `${nextAppointment.service} · ${nextAppointment.time}` : 'No tienes citas activas'}</p><strong>{nextAppointment ? nextAppointment.status : 'Reservar nuevo servicio'}</strong></article>;
   }
 
+  if (widget === 'payment_task' && isMembership) {
+    return <article className="card"><Wallet /><h3>Pago de mensualidad</h3><p>{pendingMembership ? `${pendingMembership.plan} · ${pendingMembership.due}` : 'No hay pagos pendientes'}</p><button className="btn btn-primary btn-full" disabled={!pendingMembership} onClick={() => { if (!pendingMembership) return; uploadReceipt(pendingMembership.id, 'sinpe-demo.jpg'); toast.success('Comprobante subido a revisión'); }}>Subir comprobante SINPE</button></article>;
+  }
+
   if (widget === 'payment_task') {
-    return <article className="card"><Wallet /><h3>Pagos y comprobantes</h3><p>{pendingMembership ? `${pendingMembership.plan} · ${pendingMembership.due}` : 'No hay pagos pendientes'}</p><button className="btn btn-primary btn-full" disabled={!pendingMembership} onClick={() => { if (!pendingMembership) return; uploadReceipt(pendingMembership.id, 'sinpe-demo.jpg'); toast.success('Comprobante subido a revisión'); }}>Subir comprobante demo</button></article>;
+    return <article className="card"><Wallet /><h3>Depósito de reserva</h3><p>{nextAppointment ? 'Depósito pendiente de confirmación por el negocio.' : 'No hay depósitos pendientes.'}</p><span className="badge badge-amber">SINPE disponible</span></article>;
   }
 
   if (widget === 'access_pass') {
@@ -88,7 +94,7 @@ function CustomerWidget({ widget, tenant }: { widget: CustomerWidgetKey; tenant:
   }
 
   if (widget === 'appointment_history') {
-    return <article className="card"><CheckCircle2 /><h3>Historial de citas</h3><p>{tenantAppointments.length ? `${tenantAppointments.length} registros` : 'Sin historial todavía'}</p></article>;
+    return <article className="card"><CheckCircle2 /><h3>Historial de servicios</h3><p>{tenantAppointments.length ? `${tenantAppointments.length} citas registradas` : 'Sin historial todavía'}</p></article>;
   }
 
   if (widget === 'membership_history') {
@@ -97,12 +103,12 @@ function CustomerWidget({ widget, tenant }: { widget: CustomerWidgetKey; tenant:
   }
 
   if (widget === 'aftercare') {
-    return <article className="card"><Sparkles /><h3>Preparación y cuidados</h3><p>Indicaciones del negocio antes y después del servicio.</p></article>;
+    return <article className="card"><Sparkles /><h3>{isMembership ? 'Recomendaciones' : 'Preparación y cuidados'}</h3><p>{isMembership ? 'Revisá indicaciones de clase, equipo recomendado y próximos objetivos.' : 'Indicaciones antes y después del servicio.'}</p></article>;
   }
 
   if (widget === 'promotions') {
-    return <article className="card"><Sparkles /><h3>Promos</h3><p>Beneficios activos para este negocio.</p><span className="badge badge-amber">Promo de bienvenida</span></article>;
+    return <article className="card"><Sparkles /><h3>Beneficios</h3><p>Promociones activas para este negocio.</p><span className="badge badge-amber">Beneficio de bienvenida</span></article>;
   }
 
-  return <article className="card"><Sparkles /><h3>Puntos</h3><p>Saldo disponible para beneficios.</p><strong>240 puntos</strong></article>;
+  return <article className="card"><Sparkles /><h3>{isMembership ? 'Puntos' : 'Beneficios'}</h3><p>Saldo disponible para beneficios.</p><strong>240</strong></article>;
 }

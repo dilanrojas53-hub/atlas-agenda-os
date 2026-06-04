@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { appointments as seedAppointments, events as seedEvents, memberships as seedMemberships, products as seedProducts, services as seedServices, tenants as seedTenants } from '../data/demo';
 import { loadSupabaseSnapshot } from './supabaseHydration';
-import { addCatalogItemRemote, addServiceRemote, createAppointmentRemote, updateMembershipStatusRemote } from './supabaseMutations';
+import { addCatalogItemRemote, addServiceRemote, createAppointmentRemote, createBusinessRemote, updateBusinessRemote, updateMembershipStatusRemote } from './supabaseMutations';
 
 type Tenant = typeof seedTenants[keyof typeof seedTenants] & {
   plan?: 'starter' | 'operations' | 'growth';
@@ -157,6 +157,7 @@ export function AtlasStoreProvider({ children }: { children: ReactNode }) {
         ctaLabel: input.vertical === 'membership' ? 'Entrar a mi cuenta' : 'Reservar ahora',
       } as Tenant;
       setState(current => ({ ...current, tenants: { ...current.tenants, [slug]: tenant } }));
+      void createBusinessRemote({ slug, name: input.name, vertical: input.vertical, description: input.description, plan: input.plan });
       return slug;
     },
     updateTenant: (slug, patch) => {
@@ -164,6 +165,7 @@ export function AtlasStoreProvider({ children }: { children: ReactNode }) {
         ...current,
         tenants: { ...current.tenants, [slug]: { ...current.tenants[slug], ...patch } },
       }));
+      void updateBusinessRemote(slug, patch);
     },
     addService: (input) => {
       const localId = `svc-${Date.now()}`;

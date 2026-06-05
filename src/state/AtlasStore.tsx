@@ -13,7 +13,7 @@ type Tenant = typeof seedTenants[keyof typeof seedTenants] & {
 };
 type Service = typeof seedServices[number];
 type Appointment = typeof seedAppointments[number] & { date?: string; clientPhone?: string; depositStatus?: string; notes?: string };
-type Membership = typeof seedMemberships[number] & { receiptName?: string; updatedAt?: string };
+type Membership = typeof seedMemberships[number] & { phone?: string; receiptName?: string; updatedAt?: string; notes?: string };
 type Product = typeof seedProducts[number] & { id?: string };
 type EventItem = typeof seedEvents[number] & { id?: string };
 
@@ -43,6 +43,15 @@ type NewAppointmentInput = {
   notes: string;
 };
 
+type NewMembershipInput = {
+  tenantSlug: string;
+  client: string;
+  phone: string;
+  plan: string;
+  amount: number;
+  notes: string;
+};
+
 type TenantPatch = Partial<Pick<Tenant, 'name' | 'description' | 'whatsapp' | 'address' | 'sinpeNumber' | 'sinpeOwner' | 'primaryColor' | 'heroTitle' | 'ctaLabel' | 'plan'>>;
 
 type DataSource = 'local' | 'supabase';
@@ -63,6 +72,7 @@ type Store = AtlasState & {
   updateTenant: (slug: string, patch: TenantPatch) => void;
   addService: (input: NewServiceInput) => void;
   createAppointment: (input: NewAppointmentInput) => void;
+  addMembershipRequest: (input: NewMembershipInput) => void;
   updateAppointmentStatus: (appointmentId: string, status: string) => void;
   uploadReceipt: (membershipId: string, receiptName: string) => void;
   approveReceipt: (membershipId: string) => void;
@@ -190,6 +200,11 @@ export function AtlasStoreProvider({ children }: { children: ReactNode }) {
           appointments: current.appointments.map(item => item.id === localId ? { ...item, id: remoteId } as Appointment : item),
         }));
       });
+    },
+    addMembershipRequest: (input) => {
+      const localId = `mem-${Date.now()}`;
+      const request = { id: localId, status: 'requested', due: 'Solicitud pendiente', ...input } as Membership;
+      setState(current => ({ ...current, memberships: [request, ...current.memberships] }));
     },
     updateAppointmentStatus: (appointmentId, status) => {
       setState(current => ({

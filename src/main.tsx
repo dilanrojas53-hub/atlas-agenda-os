@@ -13,4 +13,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <AtlasStoreProvider>
       <App />
-      <Toaster position="top-center" rich
+      <Toaster position="top-center" richColors />
+    </AtlasStoreProvider>
+  </React.StrictMode>
+);

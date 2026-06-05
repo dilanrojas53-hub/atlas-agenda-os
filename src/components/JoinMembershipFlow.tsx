@@ -6,12 +6,4 @@ export function JoinMembershipFlow() {
   const { slug } = useParams();
   const { getTenant } = useAtlasStore();
   const tenant = getTenant(slug);
-
-  return (
-    <PublicLayout slug={tenant.slug} businessName={tenant.name} businessType="membership">
-      <section className="public-tenant-hero">
-        <div>
-          <span className="eyebrow">Registro de alumno</span>
-          <h1>Unite a {tenant.name}</h1>
-          <p>Elegí un plan, enviá tus datos y el equipo del negocio podrá darle seguimiento desde su panel privado.</p>
-         
+  return <PublicLayout slug={tenant.slug} businessName={tenant.name} businessType="membership"><section className="public-tenant-hero"><div><span className="eyebrow">Registro</

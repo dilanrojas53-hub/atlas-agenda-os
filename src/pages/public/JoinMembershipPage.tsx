@@ -1,10 +1,17 @@
-import { useState } from 'react';
 import { Link, useParams } from 'wouter';
-import { CheckCircle2, Dumbbell, UserRound, Wallet } from 'lucide-react';
-import { toast } from 'sonner';
 import { PublicLayout } from '../../layouts/PublicLayout';
 import { useAtlasStore } from '../../state/AtlasStore';
 
-const PLANS = [
-  { name: 'MMA mensual', amount: 35000, note: 'Clases grupales y seguimiento base.' },
-  { name: 'Boxeo mensual
+export function JoinMembershipPage() {
+  const { slug } = useParams();
+  const { getTenant } = useAtlasStore();
+  const tenant = getTenant(slug);
+
+  return (
+    <PublicLayout slug={tenant.slug} businessName={tenant.name} businessType="membership">
+      <section className="public-tenant-hero">
+        <div>
+          <span className="eyebrow">Registro</span>
+          <h1>Unite a {tenant.name}</h1>
+          <p>Este flujo conectará planes, datos del alumno y revisión desde el panel privado.</p>
+          <div class

@@ -10,17 +10,4 @@ const plans = [
   { name: 'Boxeo mensual', amount: 28000 },
   { name: 'BJJ mensual', amount: 32000 },
 ];
-
-const money = (value: number) => `₡${value.toLocaleString('es-CR')}`;
-
-export function JoinMembershipFlow() {
-  const { slug } = useParams();
-  const { getTenant, addMembershipRequest } = useAtlasStore();
-  const tenant = getTenant(slug);
-  const [plan, setPlan] = useState(plans[0]);
-  const [client, setClient] = useState('');
-  const [phone, setPhone] = useState('');
-  const [notes, setNotes] = useState('');
-  const [sent, setSent] = useState(false);
-
-  const
+const money

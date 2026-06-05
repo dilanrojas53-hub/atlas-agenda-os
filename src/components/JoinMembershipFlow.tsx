@@ -2,12 +2,6 @@ import { Link, useParams } from 'wouter';
 import { PublicLayout } from '../layouts/PublicLayout';
 import { useAtlasStore } from '../state/AtlasStore';
 
-const plans = [
-  { name: 'MMA mensual', price: '₡35 000', detail: 'Clases grupales y seguimiento de alumno' },
-  { name: 'Boxeo mensual', price: '₡28 000', detail: 'Técnica, acondicionamiento y horarios flexibles' },
-  { name: 'BJJ mensual', price: '₡32 000', detail: 'Fundamentos, sparring y progreso' },
-];
-
 export function JoinMembershipFlow() {
   const { slug } = useParams();
   const { getTenant } = useAtlasStore();
@@ -18,4 +12,6 @@ export function JoinMembershipFlow() {
       <section className="public-tenant-hero">
         <div>
           <span className="eyebrow">Registro de alumno</span>
+          <h1>Unite a {tenant.name}</h1>
+          <p>Elegí un plan, enviá tus datos y el equipo del negocio podrá darle seguimiento desde su panel privado.</p>
          

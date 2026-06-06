@@ -31,6 +31,7 @@ const APPOINTMENT_NAV = [
 
 const MEMBERSHIP_NAV = [
   { section: 'Operación', items: [
+    { tab: 'Solicitudes', icon: <UserCheck size={16} /> },
     { tab: 'Membresías', icon: <Dumbbell size={16} /> },
     { tab: 'Comprobantes', icon: <Wallet size={16} /> },
     { tab: 'Productos', icon: <Package size={16} /> },
@@ -67,38 +68,13 @@ export function AdminLayout({ tenant, activeTab, onTabChange, children }: {
     <div className="admin-shell admin-shell-premium">
       <button className="admin-mobile-menu" onClick={() => setOpen(true)}><Menu size={18} /> Menú</button>
       <aside className={`admin-sidebar ${open ? 'open' : ''}`}>
-        <div className="admin-sidebar-head">
-          <Link href={`/${tenant.slug}`} className="admin-brand">Atlas OS</Link>
-          <button className="admin-close" onClick={() => setOpen(false)}><X size={18} /></button>
-        </div>
+        <div className="admin-sidebar-head"><Link href={`/${tenant.slug}`} className="admin-brand">Atlas OS</Link><button className="admin-close" onClick={() => setOpen(false)}><X size={18} /></button></div>
         <div className="tenant-chip tenant-chip-premium"><span>{businessType}</span><strong>{tenant.name}</strong><small>Panel privado del negocio</small></div>
-        <nav className="admin-nav">
-          {nav.map(group => (
-            <div key={group.section} className="admin-nav-group">
-              <p>{group.section}</p>
-              {group.items.map(item => (
-                <button key={item.tab} className={activeTab === item.tab ? 'active' : ''} onClick={() => { onTabChange(item.tab); setOpen(false); }}>
-                  {item.icon}<span>{'label' in item ? item.label : item.tab}</span>
-                </button>
-              ))}
-            </div>
-          ))}
-        </nav>
+        <nav className="admin-nav">{nav.map(group => <div key={group.section} className="admin-nav-group"><p>{group.section}</p>{group.items.map(item => <button key={item.tab} className={activeTab === item.tab ? 'active' : ''} onClick={() => { onTabChange(item.tab); setOpen(false); }}>{item.icon}<span>{'label' in item ? item.label : item.tab}</span></button>)}</div>)}</nav>
         <div className="admin-sidebar-foot"><Link href={`/${tenant.slug}`}><ChevronLeft size={14} /> Vista pública</Link><Link href={`/staff/${tenant.slug}/login`}>Entrar como staff</Link><button className="zone-exit" onClick={() => exitZone('admin', tenant.slug, `/${tenant.slug}`)}>Salir del panel</button></div>
       </aside>
       <main className="admin-main admin-main-premium">
-        <header className="admin-command-center">
-          <div>
-            <span className="eyebrow">Panel del negocio · {businessType}</span>
-            <h1>{tenant.name}</h1>
-            <p>Operación, clientes, pagos y configuración viven dentro de esta zona privada.</p>
-          </div>
-          <div className="admin-command-actions">
-            <span className="badge badge-amber"><span className="dot dot-amber" /> Activo</span>
-            <Link className="btn btn-sm btn-secondary" href={`/${tenant.slug}`}>Vista pública</Link>
-            <button className="btn btn-sm btn-secondary" onClick={() => exitZone('admin', tenant.slug, `/${tenant.slug}`)}>Salir</button>
-          </div>
-        </header>
+        <header className="admin-command-center"><div><span className="eyebrow">Panel del negocio · {businessType}</span><h1>{tenant.name}</h1><p>Operación, clientes, pagos y configuración viven dentro de esta zona privada.</p></div><div className="admin-command-actions"><span className="badge badge-amber"><span className="dot dot-amber" /> Activo</span><Link className="btn btn-sm btn-secondary" href={`/${tenant.slug}`}>Vista pública</Link><button className="btn btn-sm btn-secondary" onClick={() => exitZone('admin', tenant.slug, `/${tenant.slug}`)}>Salir</button></div></header>
         {children}
       </main>
     </div>
@@ -106,31 +82,9 @@ export function AdminLayout({ tenant, activeTab, onTabChange, children }: {
 }
 
 export function SuperAdminLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="super-shell admin-shell-premium">
-      <aside className="super-sidebar">
-        <Link href="/atlas" className="admin-brand">Digital Atlas</Link>
-        <nav className="admin-nav"><div className="admin-nav-group"><p>Control interno</p><Link href="/atlas"><Building2 size={16} /> Negocios</Link><Link href="/atlas"><BarChart3 size={16} /> Métricas</Link><Link href="/atlas"><Settings size={16} /> Sistema</Link></div><div className="admin-nav-group"><p>Acceso</p><button className="zone-exit" onClick={() => exitZone('super', undefined, '/')}>Salir de Digital Atlas</button></div></nav>
-      </aside>
-      <main className="super-main admin-main-premium"><header className="admin-command-center"><div><span className="eyebrow">Digital Atlas</span><h1>Control interno</h1><p>Zona separada para administrar negocios, planes y funciones activas.</p></div><button className="btn btn-sm btn-secondary" onClick={() => exitZone('super', undefined, '/')}>Salir</button></header>{children}</main>
-    </div>
-  );
+  return <div className="super-shell admin-shell-premium"><aside className="super-sidebar"><Link href="/atlas" className="admin-brand">Digital Atlas</Link><nav className="admin-nav"><div className="admin-nav-group"><p>Control interno</p><Link href="/atlas"><Building2 size={16} /> Negocios</Link><Link href="/atlas"><BarChart3 size={16} /> Métricas</Link><Link href="/atlas"><Settings size={16} /> Sistema</Link></div><div className="admin-nav-group"><p>Acceso</p><button className="zone-exit" onClick={() => exitZone('super', undefined, '/')}>Salir de Digital Atlas</button></div></nav></aside><main className="super-main admin-main-premium"><header className="admin-command-center"><div><span className="eyebrow">Digital Atlas</span><h1>Control interno</h1><p>Zona separada para administrar negocios, planes y funciones activas.</p></div><button className="btn btn-sm btn-secondary" onClick={() => exitZone('super', undefined, '/')}>Salir</button></header>{children}</main></div>;
 }
 
 export function StaffLayout({ tenant, activeTab, onTabChange, children }: { tenant: TenantLike; activeTab: string; onTabChange: (tab: string) => void; children: ReactNode }) {
-  return (
-    <div className="admin-shell admin-shell-premium">
-      <aside className="admin-sidebar sidebar-staff">
-        <div className="admin-sidebar-head"><Link href={`/${tenant.slug}`} className="admin-brand">{tenant.name}</Link></div>
-        <nav className="admin-nav">
-          <div className="admin-nav-group"><p>Vista staff</p>{STAFF_NAV.map(item => <button key={item.tab} className={activeTab === item.tab ? 'active' : ''} onClick={() => onTabChange(item.tab)}>{item.icon}<span>{item.tab}</span></button>)}</div>
-          <div className="admin-nav-group"><p>Acceso</p><Link href={`/${tenant.slug}`}><ChevronLeft size={16} /> Vista pública</Link><button className="zone-exit" onClick={() => exitZone('staff', tenant.slug, `/${tenant.slug}`)}>Salir de staff</button></div>
-        </nav>
-      </aside>
-      <main className="admin-main admin-main-premium">
-        <header className="admin-command-center staff-command-center"><div><span className="eyebrow">Vista staff</span><h1>{tenant.name}</h1><p>Operación diaria reducida, sin configuración sensible.</p></div><div className="admin-command-actions"><span className="badge badge-sky"><span className="dot dot-green" /> Turno activo</span><button className="btn btn-sm btn-secondary" onClick={() => exitZone('staff', tenant.slug, `/${tenant.slug}`)}>Salir</button></div></header>
-        {children}
-      </main>
-    </div>
-  );
+  return <div className="admin-shell admin-shell-premium"><aside className="admin-sidebar sidebar-staff"><div className="admin-sidebar-head"><Link href={`/${tenant.slug}`} className="admin-brand">{tenant.name}</Link></div><nav className="admin-nav"><div className="admin-nav-group"><p>Vista staff</p>{STAFF_NAV.map(item => <button key={item.tab} className={activeTab === item.tab ? 'active' : ''} onClick={() => onTabChange(item.tab)}>{item.icon}<span>{item.tab}</span></button>)}</div><div className="admin-nav-group"><p>Acceso</p><Link href={`/${tenant.slug}`}><ChevronLeft size={16} /> Vista pública</Link><button className="zone-exit" onClick={() => exitZone('staff', tenant.slug, `/${tenant.slug}`)}>Salir de staff</button></div></nav></aside><main className="admin-main admin-main-premium"><header className="admin-command-center staff-command-center"><div><span className="eyebrow">Vista staff</span><h1>{tenant.name}</h1><p>Operación diaria reducida, sin configuración sensible.</p></div><div className="admin-command-actions"><span className="badge badge-sky"><span className="dot dot-green" /> Turno activo</span><button className="btn btn-sm btn-secondary" onClick={() => exitZone('staff', tenant.slug, `/${tenant.slug}`)}>Salir</button></div></header>{children}</main></div>;
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Toaster } from 'sonner';
-import App from './AtlasApp';
+import App from './AppWithJoin';
 import { AtlasStoreProvider } from './state/AtlasStore';
 import './styles.css';
 import './adminTables.css';

@@ -8,6 +8,7 @@ import './adminTables.css';
 import './customerDashboard.css';
 import './adminPremium.css';
 import './marketingHome.css';
+import './iosTheme.css';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

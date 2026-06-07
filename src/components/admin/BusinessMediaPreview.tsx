@@ -1,26 +1,42 @@
-import { Image } from 'lucide-react';
+import { Image, Upload } from 'lucide-react';
+import { toast } from 'sonner';
 import { useBusinessMedia } from '../../platform/businessMedia';
 
 export function BusinessMediaPreview({ tenantSlug }: { tenantSlug: string }) {
   const media = useBusinessMedia(tenantSlug);
+
+  async function add(file: File | undefined, role: 'hero' | 'gallery') {
+    if (!file) return;
+    await media.addImageFromFile(file, role);
+    toast.success(role === 'hero' ? 'Hero del negocio actualizado' : 'Imagen agregada a la galería');
+  }
+
   return (
     <article className="card business-media-admin">
-      <span className="eyebrow">Visuales</span>
-      <h3>Imágenes del negocio</h3>
-      <p>Estas imágenes alimentan el hero y la galería del portal cliente.</p>
+      <div className="business-media-admin-head">
+        <div>
+          <span className="eyebrow">Visuales públicos</span>
+          <h3>Imágenes del negocio</h3>
+          <p>Estas imágenes alimentan la página pública y decoran la cuenta del cliente. Solo el admin las controla.</p>
+        </div>
+        <div className="media-upload-actions">
+          <label className="btn btn-secondary btn-sm"><Upload size={15} /> Hero<input type="file" accept="image/*" onChange={(e) => void add(e.target.files?.[0], 'hero')} /></label>
+          <label className="btn btn-primary btn-sm"><Image size={15} /> Galería<input type="file" accept="image/*" onChange={(e) => void add(e.target.files?.[0], 'gallery')} /></label>
+        </div>
+      </div>
       {media.images.length ? (
         <div className="business-media-admin-grid">
-          {media.images.slice(0, 6).map((item) => (
-            <div className="business-media-admin-card" key={item.id}>
+          {media.images.slice(0, 8).map((item) => (
+            <div className={`business-media-admin-card ${item.role === 'hero' ? 'is-hero' : ''}`} key={item.id}>
               <img src={item.url} alt={item.title} />
-              <span>{item.role}</span>
+              <span>{item.role === 'hero' ? 'Hero público' : 'Galería'}</span>
+              <button onClick={() => media.removeImage(item.id)}>×</button>
             </div>
           ))}
         </div>
       ) : (
-        <div className="empty-state"><strong>Sin imágenes</strong><span>Las imágenes que se suban al portal aparecerán aquí.</span></div>
+        <div className="empty-state"><strong>Sin imágenes</strong><span>Subí un hero o una galería desde este panel privado.</span></div>
       )}
-      <div className="empty-state"><Image size={18} /><span>Próximo paso: conectar esta sección a Supabase Storage para que el admin cargue imágenes reales.</span></div>
     </article>
   );
 }

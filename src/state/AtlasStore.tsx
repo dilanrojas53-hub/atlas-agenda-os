@@ -3,260 +3,50 @@ import { appointments as seedAppointments, events as seedEvents, memberships as 
 import { loadSupabaseSnapshot } from './supabaseHydration';
 import { addCatalogItemRemote, addServiceRemote, createAppointmentRemote, createBusinessRemote, updateBusinessRemote, updateMembershipStatusRemote } from './supabaseMutations';
 
-type Tenant = typeof seedTenants[keyof typeof seedTenants] & {
-  plan?: 'starter' | 'operations' | 'growth';
-  sinpeNumber?: string;
-  sinpeOwner?: string;
-  primaryColor?: string;
-  heroTitle?: string;
-  ctaLabel?: string;
-};
+type Tenant = typeof seedTenants[keyof typeof seedTenants] & { plan?: 'starter' | 'operations' | 'growth'; sinpeNumber?: string; sinpeOwner?: string; primaryColor?: string; heroTitle?: string; ctaLabel?: string; };
 type Service = typeof seedServices[number];
-type Appointment = typeof seedAppointments[number] & { date?: string; clientPhone?: string; depositStatus?: string; notes?: string };
-type Membership = typeof seedMemberships[number] & { phone?: string; receiptName?: string; updatedAt?: string; notes?: string };
+type Appointment = typeof seedAppointments[number] & { date?: string; clientPhone?: string; depositStatus?: string; notes?: string; trackingId?: string };
+type Membership = typeof seedMemberships[number] & { phone?: string; receiptName?: string; updatedAt?: string; notes?: string; trackingId?: string };
 type Product = typeof seedProducts[number] & { id?: string };
 type EventItem = typeof seedEvents[number] & { id?: string };
 
-type NewTenantInput = {
-  name: string;
-  vertical: 'appointments' | 'membership';
-  description: string;
-  plan?: 'starter' | 'operations' | 'growth';
-};
-
-type NewServiceInput = {
-  tenantSlug: string;
-  name: string;
-  category: string;
-  price: number;
-  duration: number;
-  deposit: number;
-};
-
-type NewAppointmentInput = {
-  tenantSlug: string;
-  client: string;
-  clientPhone: string;
-  service: string;
-  time: string;
-  date: string;
-  notes: string;
-};
-
-type NewMembershipInput = {
-  tenantSlug: string;
-  client: string;
-  phone: string;
-  plan: string;
-  amount: number;
-  notes: string;
-};
-
+type NewTenantInput = { name: string; vertical: 'appointments' | 'membership'; description: string; plan?: 'starter' | 'operations' | 'growth'; };
+type NewServiceInput = { tenantSlug: string; name: string; category: string; price: number; duration: number; deposit: number; };
+type NewAppointmentInput = { tenantSlug: string; client: string; clientPhone: string; service: string; time: string; date: string; notes: string; };
+type NewMembershipInput = { tenantSlug: string; client: string; phone: string; plan: string; amount: number; notes: string; };
 type TenantPatch = Partial<Pick<Tenant, 'name' | 'description' | 'whatsapp' | 'address' | 'sinpeNumber' | 'sinpeOwner' | 'primaryColor' | 'heroTitle' | 'ctaLabel' | 'plan'>>;
-
 type DataSource = 'local' | 'supabase';
 
-type AtlasState = {
-  tenants: Record<string, Tenant>;
-  services: Service[];
-  appointments: Appointment[];
-  memberships: Membership[];
-  products: Product[];
-  events: EventItem[];
-  dataSource: DataSource;
-};
-
-type Store = AtlasState & {
-  getTenant: (slug?: string) => Tenant;
-  addTenant: (input: NewTenantInput) => string;
-  updateTenant: (slug: string, patch: TenantPatch) => void;
-  addService: (input: NewServiceInput) => void;
-  createAppointment: (input: NewAppointmentInput) => void;
-  addMembershipRequest: (input: NewMembershipInput) => void;
-  updateAppointmentStatus: (appointmentId: string, status: string) => void;
-  uploadReceipt: (membershipId: string, receiptName: string) => void;
-  approveReceipt: (membershipId: string) => void;
-  rejectReceipt: (membershipId: string) => void;
-  addProduct: (tenantSlug: string, name: string, price: number) => void;
-  addEvent: (tenantSlug: string, title: string, date: string, price: number) => void;
-  resetDemo: () => void;
-};
+type AtlasState = { tenants: Record<string, Tenant>; services: Service[]; appointments: Appointment[]; memberships: Membership[]; products: Product[]; events: EventItem[]; dataSource: DataSource; };
+type Store = AtlasState & { getTenant: (slug?: string) => Tenant; addTenant: (input: NewTenantInput) => string; updateTenant: (slug: string, patch: TenantPatch) => void; addService: (input: NewServiceInput) => void; createAppointment: (input: NewAppointmentInput) => string; addMembershipRequest: (input: NewMembershipInput) => string; updateAppointmentStatus: (appointmentId: string, status: string) => void; uploadReceipt: (membershipId: string, receiptName: string) => void; approveReceipt: (membershipId: string) => void; rejectReceipt: (membershipId: string) => void; addProduct: (tenantSlug: string, name: string, price: number) => void; addEvent: (tenantSlug: string, title: string, date: string, price: number) => void; resetDemo: () => void; };
 
 const StoreContext = createContext<Store | null>(null);
 const STORAGE_KEY = 'atlas-agenda-os-state-v2';
-
-function slugify(value: string) {
-  return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || `tenant-${Date.now()}`;
-}
-
-function enrichTenants() {
-  return Object.fromEntries(Object.entries(seedTenants).map(([slug, tenant]) => [slug, {
-    ...tenant,
-    plan: slug === 'atlas-fight-academy' ? 'operations' : 'growth',
-    sinpeNumber: tenant.vertical === 'membership' ? '8888-0000' : '7777-0000',
-    sinpeOwner: tenant.name,
-    primaryColor: '#f59e0b',
-    heroTitle: tenant.name,
-    ctaLabel: tenant.vertical === 'membership' ? 'Entrar a mi cuenta' : 'Reservar ahora',
-  } as Tenant]));
-}
-
-function initialState(): AtlasState {
-  return {
-    tenants: enrichTenants() as Record<string, Tenant>,
-    services: seedServices as Service[],
-    appointments: seedAppointments as Appointment[],
-    memberships: seedMemberships as Membership[],
-    products: seedProducts as Product[],
-    events: seedEvents as EventItem[],
-    dataSource: 'local',
-  };
-}
+function slugify(value: string) { return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || `tenant-${Date.now()}`; }
+function enrichTenants() { return Object.fromEntries(Object.entries(seedTenants).map(([slug, tenant]) => [slug, { ...tenant, plan: slug === 'atlas-fight-academy' ? 'operations' : 'growth', sinpeNumber: tenant.vertical === 'membership' ? '8888-0000' : '7777-0000', sinpeOwner: tenant.name, primaryColor: '#f59e0b', heroTitle: tenant.name, ctaLabel: tenant.vertical === 'membership' ? 'Entrar a mi cuenta' : 'Reservar ahora' } as Tenant])); }
+function initialState(): AtlasState { return { tenants: enrichTenants() as Record<string, Tenant>, services: seedServices as Service[], appointments: seedAppointments as Appointment[], memberships: seedMemberships as Membership[], products: seedProducts as Product[], events: seedEvents as EventItem[], dataSource: 'local' }; }
 
 export function AtlasStoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AtlasState>(initialState);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function hydrate() {
-      const saved = window.localStorage.getItem(STORAGE_KEY);
-      if (saved) setState(JSON.parse(saved));
-
-      const remote = await loadSupabaseSnapshot();
-      if (!cancelled && remote) {
-        setState(current => ({
-          ...current,
-          tenants: remote.tenants as Record<string, Tenant>,
-          services: remote.services.length ? remote.services as Service[] : current.services,
-          products: remote.products.length ? remote.products as Product[] : current.products,
-          events: remote.events.length ? remote.events as EventItem[] : current.events,
-          dataSource: 'supabase',
-        }));
-      }
-    }
-    hydrate();
-    return () => { cancelled = true; };
-  }, []);
-
-  useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state]);
+  useEffect(() => { let cancelled = false; async function hydrate() { const saved = window.localStorage.getItem(STORAGE_KEY); if (saved) setState(JSON.parse(saved)); const remote = await loadSupabaseSnapshot(); if (!cancelled && remote) setState(current => ({ ...current, tenants: remote.tenants as Record<string, Tenant>, services: remote.services.length ? remote.services as Service[] : current.services, products: remote.products.length ? remote.products as Product[] : current.products, events: remote.events.length ? remote.events as EventItem[] : current.events, dataSource: 'supabase' })); } hydrate(); return () => { cancelled = true; }; }, []);
+  useEffect(() => { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }, [state]);
 
   const store = useMemo<Store>(() => ({
     ...state,
     getTenant: (slug?: string) => state.tenants[slug || 'ink-beauty-studio'] || state.tenants['ink-beauty-studio'],
-    addTenant: (input) => {
-      const slug = slugify(input.name);
-      const modules = input.vertical === 'membership'
-        ? ['Membresías', 'Comprobantes', 'Eventos', 'Productos', 'Promos', 'Clientes']
-        : ['Agenda', 'Servicios', 'Profesionales', 'Depósitos', 'Clientes', 'Promos'];
-      const tenant = {
-        slug,
-        name: input.name,
-        vertical: input.vertical,
-        label: input.vertical === 'membership' ? 'Gym y academia' : 'Citas y servicios',
-        description: input.description,
-        whatsapp: '50600000000',
-        address: 'Costa Rica',
-        modules,
-        plan: input.plan || 'starter',
-        sinpeNumber: '0000-0000',
-        sinpeOwner: input.name,
-        primaryColor: '#f59e0b',
-        heroTitle: input.name,
-        ctaLabel: input.vertical === 'membership' ? 'Entrar a mi cuenta' : 'Reservar ahora',
-      } as Tenant;
-      setState(current => ({ ...current, tenants: { ...current.tenants, [slug]: tenant } }));
-      void createBusinessRemote({ slug, name: input.name, vertical: input.vertical, description: input.description, plan: input.plan });
-      return slug;
-    },
-    updateTenant: (slug, patch) => {
-      setState(current => ({
-        ...current,
-        tenants: { ...current.tenants, [slug]: { ...current.tenants[slug], ...patch } },
-      }));
-      void updateBusinessRemote(slug, patch);
-    },
-    addService: (input) => {
-      const localId = `svc-${Date.now()}`;
-      const service = { id: localId, ...input } as Service;
-      setState(current => ({ ...current, services: [service, ...current.services] }));
-      void addServiceRemote(input).then(remoteId => {
-        if (!remoteId) return;
-        setState(current => ({
-          ...current,
-          services: current.services.map(item => item.id === localId ? { ...item, id: remoteId } as Service : item),
-        }));
-      });
-    },
-    createAppointment: (input) => {
-      const localId = `apt-${Date.now()}`;
-      const appointment = { id: localId, status: 'pending_deposit', depositStatus: 'pending', ...input } as Appointment;
-      setState(current => ({ ...current, appointments: [appointment, ...current.appointments] }));
-      void createAppointmentRemote(input).then(remoteId => {
-        if (!remoteId) return;
-        setState(current => ({
-          ...current,
-          appointments: current.appointments.map(item => item.id === localId ? { ...item, id: remoteId } as Appointment : item),
-        }));
-      });
-    },
-    addMembershipRequest: (input) => {
-      const localId = `mem-${Date.now()}`;
-      const request = { id: localId, status: 'requested', due: 'Solicitud pendiente', ...input } as Membership;
-      setState(current => ({ ...current, memberships: [request, ...current.memberships] }));
-    },
-    updateAppointmentStatus: (appointmentId, status) => {
-      setState(current => ({
-        ...current,
-        appointments: current.appointments.map(item => item.id === appointmentId ? { ...item, status } : item),
-      }));
-    },
-    uploadReceipt: (membershipId, receiptName) => {
-      setState(current => ({
-        ...current,
-        memberships: current.memberships.map(item => item.id === membershipId ? { ...item, status: 'receipt_uploaded', due: 'Comprobante en revisión', receiptName, updatedAt: new Date().toLocaleString('es-CR') } : item),
-      }));
-      void updateMembershipStatusRemote(membershipId, 'receipt_uploaded');
-    },
-    approveReceipt: (membershipId) => {
-      setState(current => ({
-        ...current,
-        memberships: current.memberships.map(item => item.id === membershipId ? { ...item, status: 'paid', due: 'Pagado junio', updatedAt: new Date().toLocaleString('es-CR') } : item),
-      }));
-      void updateMembershipStatusRemote(membershipId, 'paid');
-    },
-    rejectReceipt: (membershipId) => {
-      setState(current => ({
-        ...current,
-        memberships: current.memberships.map(item => item.id === membershipId ? { ...item, status: 'rejected', due: 'Reenviar comprobante', updatedAt: new Date().toLocaleString('es-CR') } : item),
-      }));
-      void updateMembershipStatusRemote(membershipId, 'rejected');
-    },
-    addProduct: (tenantSlug, name, price) => {
-      const localId = `prd-${Date.now()}`;
-      setState(current => ({ ...current, products: [{ id: localId, tenantSlug, name, category: 'Nuevo', price }, ...current.products] }));
-      void addCatalogItemRemote({ tenantSlug, kind: 'product', name, price }).then(remoteId => {
-        if (!remoteId) return;
-        setState(current => ({ ...current, products: current.products.map(item => item.id === localId ? { ...item, id: remoteId } : item) }));
-      });
-    },
-    addEvent: (tenantSlug, title, date, price) => {
-      const localId = `evt-${Date.now()}`;
-      setState(current => ({ ...current, events: [{ id: localId, tenantSlug, title, date, price }, ...current.events] }));
-      void addCatalogItemRemote({ tenantSlug, kind: 'event', name: title, price }).then(remoteId => {
-        if (!remoteId) return;
-        setState(current => ({ ...current, events: current.events.map(item => item.id === localId ? { ...item, id: remoteId } : item) }));
-      });
-    },
+    addTenant: (input) => { const slug = slugify(input.name); const modules = input.vertical === 'membership' ? ['Membresías', 'Comprobantes', 'Eventos', 'Productos', 'Promos', 'Clientes'] : ['Agenda', 'Servicios', 'Profesionales', 'Depósitos', 'Clientes', 'Promos']; const tenant = { slug, name: input.name, vertical: input.vertical, label: input.vertical === 'membership' ? 'Gym y academia' : 'Citas y servicios', description: input.description, whatsapp: '50600000000', address: 'Costa Rica', modules, plan: input.plan || 'starter', sinpeNumber: '0000-0000', sinpeOwner: input.name, primaryColor: '#f59e0b', heroTitle: input.name, ctaLabel: input.vertical === 'membership' ? 'Entrar a mi cuenta' : 'Reservar ahora' } as Tenant; setState(current => ({ ...current, tenants: { ...current.tenants, [slug]: tenant } })); void createBusinessRemote({ slug, name: input.name, vertical: input.vertical, description: input.description, plan: input.plan }); return slug; },
+    updateTenant: (slug, patch) => { setState(current => ({ ...current, tenants: { ...current.tenants, [slug]: { ...current.tenants[slug], ...patch } } })); void updateBusinessRemote(slug, patch); },
+    addService: (input) => { const localId = `svc-${Date.now()}`; const service = { id: localId, ...input } as Service; setState(current => ({ ...current, services: [service, ...current.services] })); void addServiceRemote(input).then(remoteId => { if (!remoteId) return; setState(current => ({ ...current, services: current.services.map(item => item.id === localId ? { ...item, id: remoteId } as Service : item) })); }); },
+    createAppointment: (input) => { const localId = `apt-${Date.now()}`; const appointment = { id: localId, trackingId: localId, status: 'pending_deposit', depositStatus: 'pending', ...input } as Appointment; setState(current => ({ ...current, appointments: [appointment, ...current.appointments] })); void createAppointmentRemote(input).then(remoteId => { if (!remoteId) return; setState(current => ({ ...current, appointments: current.appointments.map(item => item.id === localId ? { ...item, id: remoteId, trackingId: localId } as Appointment : item) })); }); return localId; },
+    addMembershipRequest: (input) => { const localId = `mem-${Date.now()}`; const request = { id: localId, trackingId: localId, status: 'requested', due: 'Solicitud pendiente', ...input } as Membership; setState(current => ({ ...current, memberships: [request, ...current.memberships] })); return localId; },
+    updateAppointmentStatus: (appointmentId, status) => { setState(current => ({ ...current, appointments: current.appointments.map(item => item.id === appointmentId || item.trackingId === appointmentId ? { ...item, status } : item) })); },
+    uploadReceipt: (membershipId, receiptName) => { setState(current => ({ ...current, memberships: current.memberships.map(item => item.id === membershipId || item.trackingId === membershipId ? { ...item, status: 'receipt_uploaded', due: 'Comprobante en revisión', receiptName, updatedAt: new Date().toLocaleString('es-CR') } : item) })); void updateMembershipStatusRemote(membershipId, 'receipt_uploaded'); },
+    approveReceipt: (membershipId) => { setState(current => ({ ...current, memberships: current.memberships.map(item => item.id === membershipId || item.trackingId === membershipId ? { ...item, status: 'paid', due: 'Pagado junio', updatedAt: new Date().toLocaleString('es-CR') } : item) })); void updateMembershipStatusRemote(membershipId, 'paid'); },
+    rejectReceipt: (membershipId) => { setState(current => ({ ...current, memberships: current.memberships.map(item => item.id === membershipId || item.trackingId === membershipId ? { ...item, status: 'rejected', due: 'Reenviar comprobante', updatedAt: new Date().toLocaleString('es-CR') } : item) })); void updateMembershipStatusRemote(membershipId, 'rejected'); },
+    addProduct: (tenantSlug, name, price) => { const localId = `prd-${Date.now()}`; setState(current => ({ ...current, products: [{ id: localId, tenantSlug, name, category: 'Nuevo', price }, ...current.products] })); void addCatalogItemRemote({ tenantSlug, kind: 'product', name, price }).then(remoteId => { if (!remoteId) return; setState(current => ({ ...current, products: current.products.map(item => item.id === localId ? { ...item, id: remoteId } : item) })); }); },
+    addEvent: (tenantSlug, title, date, price) => { const localId = `evt-${Date.now()}`; setState(current => ({ ...current, events: [{ id: localId, tenantSlug, title, date, price }, ...current.events] })); void addCatalogItemRemote({ tenantSlug, kind: 'event', name: title, price }).then(remoteId => { if (!remoteId) return; setState(current => ({ ...current, events: current.events.map(item => item.id === localId ? { ...item, id: remoteId } : item) })); }); },
     resetDemo: () => setState(initialState()),
   }), [state]);
-
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
 }
-
-export function useAtlasStore() {
-  const value = useContext(StoreContext);
-  if (!value) throw new Error('useAtlasStore must be used inside AtlasStoreProvider');
-  return value;
-}
+export function useAtlasStore() { const value = useContext(StoreContext); if (!value) throw new Error('useAtlasStore must be used inside AtlasStoreProvider'); return value; }

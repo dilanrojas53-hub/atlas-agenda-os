@@ -1,6 +1,7 @@
-import { CalendarDays, CheckCircle2, Dumbbell, Home, KeyRound, Receipt, Sparkles, UserRound, Wallet } from 'lucide-react';
+import { CalendarDays, CheckCircle2, Dumbbell, Home, Image as ImageIcon, KeyRound, Receipt, Sparkles, Upload, UserRound, Wallet, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { resolveCustomerDashboard, type CustomerWidgetKey } from '../platform/customerExperience';
+import { useBusinessMedia } from '../platform/businessMedia';
 import { useAtlasStore } from '../state/AtlasStore';
 
 const money = (value: number) => `₡${value.toLocaleString('es-CR')}`;
@@ -36,6 +37,8 @@ export function CustomerDashboardRenderer({ tenant, activeSection, onSectionChan
   const isMembership = spec.vertical === 'membership';
   const primaryWidget = widgets[0];
   const secondaryWidgets = widgets.slice(1);
+  const media = useBusinessMedia(tenant.slug);
+  const heroStyle = media.heroImage ? { backgroundImage: `linear-gradient(135deg, rgba(255,255,255,.92), rgba(255,255,255,.74)), url(${media.heroImage.url})` } : undefined;
 
   return (
     <div className="client-shell">
@@ -45,7 +48,7 @@ export function CustomerDashboardRenderer({ tenant, activeSection, onSectionChan
         <div className="client-user"><span className="badge badge-green"><span className="dot dot-green" /> {isMembership ? 'Alumno' : 'Cliente'}</span><button className="client-exit" onClick={() => exitClientZone(tenant.slug)}>Salir</button><div className="avatar">ML</div></div>
       </header>
       <main className="client-main client-dashboard-main">
-        <section className="client-hero client-hero-premium">
+        <section className="client-hero client-hero-premium client-visual-hero" style={heroStyle}>
           <div>
             <span className="eyebrow">{isMembership ? 'Cuenta de alumno' : 'Cuenta del cliente'}</span>
             <h1>{spec.title}</h1>
@@ -59,6 +62,8 @@ export function CustomerDashboardRenderer({ tenant, activeSection, onSectionChan
           <div><span>Negocio</span><strong>{tenant.name}</strong></div>
           <div><span>Próximo paso</span><strong>{isMembership ? 'Validar pago' : 'Confirmar depósito'}</strong></div>
         </section>
+
+        <MediaStrip tenantSlug={tenant.slug} isMembership={isMembership} />
 
         <section className="client-dashboard-layout">
           {primaryWidget ? <CustomerWidget widget={primaryWidget} tenant={tenant} featured /> : null}
@@ -75,6 +80,45 @@ export function CustomerDashboardRenderer({ tenant, activeSection, onSectionChan
         ))}
       </nav>
     </div>
+  );
+}
+
+function MediaStrip({ tenantSlug, isMembership }: { tenantSlug: string; isMembership: boolean }) {
+  const media = useBusinessMedia(tenantSlug);
+  const title = isMembership ? 'Imágenes de la academia' : 'Imágenes del estudio';
+  const emptyText = isMembership ? 'Subí fotos de clases, espacios, eventos o productos para darle vida al portal.' : 'Subí fotos del local, resultados, preparación o productos para que el cliente entienda mejor el servicio.';
+
+  async function handleFile(file: File | undefined, role: 'hero' | 'gallery') {
+    if (!file) return;
+    await media.addImageFromFile(file, role);
+    toast.success(role === 'hero' ? 'Hero actualizado' : 'Imagen agregada');
+  }
+
+  return (
+    <section className="client-media-panel card">
+      <div className="client-media-head">
+        <div>
+          <span className="eyebrow">Contenido visual</span>
+          <h3>{title}</h3>
+          <p>{media.images.length ? 'Estas imágenes alimentan el hero y la galería de la cuenta.' : emptyText}</p>
+        </div>
+        <div className="media-upload-actions">
+          <label className="btn btn-secondary btn-sm"><Upload size={15} /> Hero<input type="file" accept="image/*" onChange={(e) => void handleFile(e.target.files?.[0], 'hero')} /></label>
+          <label className="btn btn-primary btn-sm"><ImageIcon size={15} /> Galería<input type="file" accept="image/*" onChange={(e) => void handleFile(e.target.files?.[0], 'gallery')} /></label>
+        </div>
+      </div>
+      {media.images.length ? (
+        <div className="client-media-grid">
+          {media.images.slice(0, 6).map((image) => (
+            <article key={image.id} className={`client-media-card ${image.role === 'hero' ? 'is-hero' : ''}`}>
+              <img src={image.url} alt={image.title} />
+              <div><strong>{image.role === 'hero' ? 'Hero' : image.title}</strong><span>{image.caption}</span></div>
+              <button aria-label="Eliminar imagen" onClick={() => media.removeImage(image.id)}><X size={14} /></button>
+            </article>
+          ))}
+        </div>
+      ) : <div className="client-media-empty"><ImageIcon /><span>Sin imágenes todavía</span></div>}
+    </section>
   );
 }
 

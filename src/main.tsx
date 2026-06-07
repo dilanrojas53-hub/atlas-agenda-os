@@ -11,6 +11,7 @@ import './marketingHome.css';
 import './iosTheme.css';
 import './whitePremium.css';
 import './customerMedia.css';
+import './publicMedia.css';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

@@ -30,7 +30,7 @@ function BusinessCard({ business }: { business: Business }) {
       </div>
       <div className="trusted-actions">
         <Link className="btn btn-primary btn-sm" href={`/${business.slug}`}>{isMembership ? 'Ver academia' : 'Ver negocio'}</Link>
-        <Link className="btn btn-secondary btn-sm" href={isMembership ? `/${business.slug}#plans` : `/${business.slug}#services`}>{isMembership ? 'Ver planes' : 'Ver precios'}</Link>
+        <Link className="btn btn-secondary btn-sm" href={isMembership ? `/join/${business.slug}` : `/${business.slug}#services`}>{isMembership ? 'Solicitar registro' : 'Ver precios'}</Link>
       </div>
     </article>
   );
@@ -73,7 +73,7 @@ export function MarketingHome() {
           </div>
         </div>
         <aside className="hero-panel marketing-panel">
-          <span className="badge badge-violet">Sistema multi-negocio</span>
+          <span className="badge badge-violet">Sistema por negocio</span>
           <h3>Un panel controla cada página pública</h3>
           <p>El negocio edita servicios, planes, productos, eventos, pagos SINPE y datos públicos desde su propio panel privado.</p>
         </aside>

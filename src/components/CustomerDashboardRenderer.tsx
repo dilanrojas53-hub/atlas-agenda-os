@@ -1,4 +1,4 @@
-import { CalendarDays, CheckCircle2, Dumbbell, Home, Image as ImageIcon, KeyRound, Receipt, Sparkles, Upload, UserRound, Wallet, X } from 'lucide-react';
+import { CalendarDays, CheckCircle2, Dumbbell, Home, Image as ImageIcon, KeyRound, Receipt, Sparkles, UserRound, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
 import { resolveCustomerDashboard, type CustomerWidgetKey } from '../platform/customerExperience';
 import { useBusinessMedia } from '../platform/businessMedia';
@@ -38,14 +38,18 @@ export function CustomerDashboardRenderer({ tenant, activeSection, onSectionChan
   const primaryWidget = widgets[0];
   const secondaryWidgets = widgets.slice(1);
   const media = useBusinessMedia(tenant.slug);
-  const heroStyle = media.heroImage ? { backgroundImage: `linear-gradient(135deg, rgba(255,255,255,.92), rgba(255,255,255,.74)), url(${media.heroImage.url})` } : undefined;
+  const heroStyle = media.heroImage ? { backgroundImage: `linear-gradient(135deg, rgba(255,255,255,.92), rgba(255,255,255,.76)), url(${media.heroImage.url})` } : undefined;
 
   return (
     <div className="client-shell">
       <header className="client-topbar">
         <LinkBack slug={tenant.slug} />
         <span className="client-brand">{tenant.name}</span>
-        <div className="client-user"><span className="badge badge-green"><span className="dot dot-green" /> {isMembership ? 'Alumno' : 'Cliente'}</span><button className="client-exit" onClick={() => exitClientZone(tenant.slug)}>Salir</button><div className="avatar">ML</div></div>
+        <div className="client-user">
+          <span className="badge badge-green"><span className="dot dot-green" /> {isMembership ? 'Alumno' : 'Cliente'}</span>
+          <button className="client-exit" onClick={() => exitClientZone(tenant.slug)}>Salir</button>
+          <div className="avatar">ML</div>
+        </div>
       </header>
       <main className="client-main client-dashboard-main">
         <section className="client-hero client-hero-premium client-visual-hero" style={heroStyle}>
@@ -63,7 +67,7 @@ export function CustomerDashboardRenderer({ tenant, activeSection, onSectionChan
           <div><span>Próximo paso</span><strong>{isMembership ? 'Validar pago' : 'Confirmar depósito'}</strong></div>
         </section>
 
-        <MediaStrip tenantSlug={tenant.slug} isMembership={isMembership} />
+        <ClientContextPanel tenant={tenant} isMembership={isMembership} />
 
         <section className="client-dashboard-layout">
           {primaryWidget ? <CustomerWidget widget={primaryWidget} tenant={tenant} featured /> : null}
@@ -83,41 +87,46 @@ export function CustomerDashboardRenderer({ tenant, activeSection, onSectionChan
   );
 }
 
-function MediaStrip({ tenantSlug, isMembership }: { tenantSlug: string; isMembership: boolean }) {
-  const media = useBusinessMedia(tenantSlug);
-  const title = isMembership ? 'Imágenes de la academia' : 'Imágenes del estudio';
-  const emptyText = isMembership ? 'Subí fotos de clases, espacios, eventos o productos para darle vida al portal.' : 'Subí fotos del local, resultados, preparación o productos para que el cliente entienda mejor el servicio.';
+function ClientContextPanel({ tenant, isMembership }: { tenant: TenantLike; isMembership: boolean }) {
+  const { memberships, uploadReceipt } = useAtlasStore();
+  const media = useBusinessMedia(tenant.slug);
+  const pendingMembership = memberships.find((item) => item.tenantSlug === tenant.slug && item.status !== 'paid');
 
-  async function handleFile(file: File | undefined, role: 'hero' | 'gallery') {
-    if (!file) return;
-    await media.addImageFromFile(file, role);
-    toast.success(role === 'hero' ? 'Hero actualizado' : 'Imagen agregada');
+  if (isMembership) {
+    return (
+      <section className="client-media-panel card">
+        <div className="client-media-head">
+          <div>
+            <span className="eyebrow">Pagos y acceso</span>
+            <h3>Mi comprobante SINPE</h3>
+            <p>Subí el comprobante de tu mensualidad para que la academia lo revise desde su panel privado.</p>
+          </div>
+          <button className="btn btn-primary btn-sm" disabled={!pendingMembership} onClick={() => { if (!pendingMembership) return; uploadReceipt(pendingMembership.id, 'sinpe-demo.jpg'); toast.success('Comprobante enviado a revisión'); }}>Subir comprobante</button>
+        </div>
+        <div className="client-media-empty"><Receipt /><span>{pendingMembership ? pendingMembership.due : 'No tenés pagos pendientes.'}</span></div>
+      </section>
+    );
   }
 
   return (
     <section className="client-media-panel card">
       <div className="client-media-head">
         <div>
-          <span className="eyebrow">Contenido visual</span>
-          <h3>{title}</h3>
-          <p>{media.images.length ? 'Estas imágenes alimentan el hero y la galería de la cuenta.' : emptyText}</p>
-        </div>
-        <div className="media-upload-actions">
-          <label className="btn btn-secondary btn-sm"><Upload size={15} /> Hero<input type="file" accept="image/*" onChange={(e) => void handleFile(e.target.files?.[0], 'hero')} /></label>
-          <label className="btn btn-primary btn-sm"><ImageIcon size={15} /> Galería<input type="file" accept="image/*" onChange={(e) => void handleFile(e.target.files?.[0], 'gallery')} /></label>
+          <span className="eyebrow">Tu cita</span>
+          <h3>Referencias y preparación</h3>
+          <p>Tu cuenta debe ayudarte a preparar la cita: referencias, notas, depósito, cuidados y seguimiento. Las fotos del local las administra el negocio.</p>
         </div>
       </div>
-      {media.images.length ? (
+      {media.galleryImages.length ? (
         <div className="client-media-grid">
-          {media.images.slice(0, 6).map((image) => (
-            <article key={image.id} className={`client-media-card ${image.role === 'hero' ? 'is-hero' : ''}`}>
+          {media.galleryImages.slice(0, 3).map((image) => (
+            <article key={image.id} className="client-media-card">
               <img src={image.url} alt={image.title} />
-              <div><strong>{image.role === 'hero' ? 'Hero' : image.title}</strong><span>{image.caption}</span></div>
-              <button aria-label="Eliminar imagen" onClick={() => media.removeImage(image.id)}><X size={14} /></button>
+              <div><strong>{image.title}</strong><span>{image.caption}</span></div>
             </article>
           ))}
         </div>
-      ) : <div className="client-media-empty"><ImageIcon /><span>Sin imágenes todavía</span></div>}
+      ) : <div className="client-media-empty"><ImageIcon /><span>El negocio todavía no ha publicado imágenes de referencia.</span></div>}
     </section>
   );
 }
@@ -137,7 +146,7 @@ function CustomerWidget({ widget, tenant, featured = false }: { widget: Customer
 
   if (widget === 'membership_status') {
     const current = tenantMemberships[0];
-    return <article className={className}><Dumbbell /><span className="badge badge-green">Plan activo</span><h3>Mi membresía</h3><p>{current ? current.plan : 'Sin plan activo'}</p><strong>{current ? current.due : 'Consulta planes disponibles'}</strong><small>Desde aquí se controla el estado del alumno dentro del negocio.</small></article>;
+    return <article className={className}><Dumbbell /><span className="badge badge-green">Plan activo</span><h3>Mi membresía</h3><p>{current ? current.plan : 'Sin plan activo'}</p><strong>{current ? current.due : 'Consulta planes disponibles'}</strong><small>Este es tu estado como alumno dentro del negocio.</small></article>;
   }
 
   if (widget === 'upcoming_appointment') {

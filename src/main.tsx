@@ -9,6 +9,7 @@ import './customerDashboard.css';
 import './adminPremium.css';
 import './marketingHome.css';
 import './iosTheme.css';
+import './whitePremium.css';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

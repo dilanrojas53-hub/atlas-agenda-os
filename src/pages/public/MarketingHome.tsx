@@ -1,5 +1,6 @@
 import { Link } from 'wouter';
-import { BarChart3, CalendarDays, Dumbbell, LayoutDashboard, MapPin, ShieldCheck, Sparkles, UserRoundCheck, Users, Wallet } from 'lucide-react';
+import { BarChart3, CalendarDays, Dumbbell, Image as ImageIcon, LayoutDashboard, MapPin, ShieldCheck, Sparkles, UserRoundCheck, Users, Wallet } from 'lucide-react';
+import { useBusinessMedia } from '../../platform/businessMedia';
 import { useAtlasStore } from '../../state/AtlasStore';
 
 const money = (value: number) => `₡${value.toLocaleString('es-CR')}`;
@@ -8,6 +9,7 @@ type Business = ReturnType<typeof useAtlasStore>['tenants'][string];
 
 function BusinessCard({ business }: { business: Business }) {
   const store = useAtlasStore();
+  const media = useBusinessMedia(business.slug);
   const isMembership = business.vertical === 'membership';
   const services = store.services.filter((item) => item.tenantSlug === business.slug).slice(0, 3);
   const products = store.products.filter((item) => item.tenantSlug === business.slug).slice(0, 2);
@@ -18,9 +20,21 @@ function BusinessCard({ business }: { business: Business }) {
   const meta = isMembership
     ? `${memberships.length} alumnos · ${products.length} productos`
     : `${services.length} servicios · ${store.appointments.filter((item) => item.tenantSlug === business.slug).length} citas`;
+  const coverImage = media.heroImage || media.galleryImages[0];
 
   return (
-    <article className={`trusted-business-card card ${isMembership ? 'business-card-academy' : 'business-card-appointments'}`}>
+    <article className={`trusted-business-card card ${isMembership ? 'business-card-academy' : 'business-card-appointments'} ${coverImage ? 'has-cover' : ''}`}>
+      {coverImage ? (
+        <div className="trusted-business-cover">
+          <img src={coverImage.url} alt={coverImage.title || business.name} />
+          <span>{isMembership ? 'Academia conectada' : 'Negocio conectado'}</span>
+        </div>
+      ) : (
+        <div className="trusted-business-cover trusted-business-cover-empty">
+          <ImageIcon size={28} />
+          <span>Admin puede subir hero</span>
+        </div>
+      )}
       <div className="trusted-card-top">
         <span className={`badge ${isMembership ? 'badge-green' : 'badge-amber'}`}>{isMembership ? 'Gym / academia' : 'Servicios por cita'}</span>
         <span className="trusted-plan">{business.plan || 'operations'}</span>

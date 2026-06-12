@@ -1,6 +1,7 @@
 import { Link, useParams } from 'wouter';
 import { CalendarDays, CheckCircle2, Clock, Dumbbell, MessageCircle, Receipt, ShieldCheck, Sparkles, Wallet, XCircle } from 'lucide-react';
 import { useAtlasStore } from '../state/AtlasStore';
+import '../statusTracking.css';
 
 const money = (value: number) => `₡${value.toLocaleString('es-CR')}`;
 type Step = { key: string; label: string; text: string; icon: JSX.Element };
